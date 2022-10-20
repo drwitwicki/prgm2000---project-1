@@ -2,6 +2,9 @@
 ### Eric Caverly & Dave Witwicki
 ### October 19th, 2022
 
-$contents = ls | Select
+$PATH = Get-Location
+$contents = ls $PATH
 
-$Option = Read-Host 
+Write-Host $contents
+
+#$Option = Read-Host 
