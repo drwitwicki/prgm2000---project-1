@@ -4,6 +4,11 @@
 
 $PATH = Get-Location
 $contents = ls $PATH
+$level = 0
+
+if ($contents -contains "root") {
+    $level = 0
+}
 
 Write-Host $contents
 
