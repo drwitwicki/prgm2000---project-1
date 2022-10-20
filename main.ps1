@@ -17,26 +17,7 @@ cd $PATH
 
 $global:running = $True
 
-Function Build-Menu([Array[]]$contArray) {
-	Clear-Host
-	Write-Host -fore yellow "################################"
-	
-	$ShortPath = $global:PATH.Substring($TopPath.length)
-	Write-Host -fore cyan "`n $ShortPath `n"
-	
-	for ($i=1; $i -le $contArray.length; $i++) {
-		$item= $contArray[$i-1]
-		Write-Host "$i -- $item"
-	}
-
-	Write-Host "`nu -- Up"
-	Write-Host "q -- Quit"
-
-	$Option = Read-Host "`nSelect (eg. '1')"
-
-	return $Option
-}
-
+. "$TopPath/functions.ps1"
 
 Function Check-Option($Opt, $contArray) {
 	if ($Opt -eq "q") {
@@ -63,13 +44,17 @@ Function Check-Option($Opt, $contArray) {
 
 Function Go-Into($name) {
 	[String]$Ext = Get-Item $name | Select-Object -expandproperty Extension
+	
 	if ($Ext -eq "") {
 		cd $name
 		[String]$global:path = Get-Location
 	}
+	
 	elseif ($Ext -eq ".ps1") {
-		
+		. "$global:PATH/$name"
+		Show-Error ""
 	} 
+	
 	else {
 		Show-Error "Illegal file type!"
 	}
@@ -86,7 +71,23 @@ While ($running) {
 	$contents = ls
 	$contArray = $contents -split " "
 
-	$Option = Build-Menu $contArray
+	#$Option = Legacy-Build-Menu $contArray
+
+	$opt = [System.Collections.ArrayList]
+	for ($i=1; $i -le $contArray.length; $i++) {
+		$item= $contArray[$i-1]
+		$opt.add(("$item", "$i"))
+	}
+
+	echo $opt
+	$opt.add(("Quit", "q"))
+	$opt.add(("Up", "u"))
+
+	echo $opt
+	
+	$ShortPath = $global:PATH.Substring($TopPath.length)
+
+
 	Check-Option $Option $contArray
 }
 
