@@ -40,20 +40,28 @@ Function SubnetScan($network, $mask) {
 	Show-Error ""
 } #>
 
-Function SubnetScan($argnetwork, $argmask) {
+Function Get-BinNetworkAndMask($argnetwork, $argmask) {
 	$net = $argnetwork.split(".")
-	$mas = $argmask.split(".")
 	
 	$netBin = ""
 	$masBin = ""
+	
 	for($i=0; $i -lt 4; $i++) {
 		$netBin+=[convert]::ToString($net[$i], 2).PadLeft(8, '0')
-		$masBin+=[convert]::ToString($mas[$i], 2).PadLeft(8, '0')
 	}
 
-	echo $netBin
-	echo $masBin
+	$masbin+="1"*($argmask)
+	$masbin+="0"*(32-$argmask)
 
+	return $netBin, $masBin
+}
+
+Function Get-DecNetwork($argnetwork) {
+	$net = @($argnetwork.substring(0, 8), $argnetwork.substring(8, 8), $argnetwork.substring(16, 8), $argnetwork.substring(24, 8))
+	foreach $octet in $net {
+		$octet = [Convert]::ToInt32($octet, 2)
+	}
+	$addr 
 }
 
 Function Current() {
@@ -64,7 +72,11 @@ Function Custom() {
 	[string]$Network = Read-Host "Network (192.168.0.0) "
 	[string]$SubnetMask = Read-Host "Subnet (255.255.255.0) "	
 
-	SubnetScan $Network $SubnetMask
+	$netbin, $masbin = Get-BinNetworkAndMask $Network $SubnetMask
+	$netdec = Get-DecNetwork $netbin
+	echo $netbin
+	echo $masbin
+	echo $netdec
 }
 
 $opt = @()
