@@ -44,9 +44,15 @@ Function SubnetScan($argnetwork, $argmask) {
 	$net = $argnetwork.split(".")
 	$mas = $argmask.split(".")
 	
+	$netBin = ""
+	$masBin = ""
 	for($i=0; $i -lt 4; $i++) {
-		
+		$netBin+=[convert]::ToString($net[$i], 2).PadLeft(8, '0')
+		$masBin+=[convert]::ToString($mas[$i], 2).PadLeft(8, '0')
 	}
+
+	echo $netBin
+	echo $masBin
 
 }
 
