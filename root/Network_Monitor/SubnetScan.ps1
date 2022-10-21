@@ -1,7 +1,13 @@
 ### Subnet scan
 
-Function SubnetScan() {
-	
+Function SubnetScan($network, $mask) {
+
+	$network
+
+	$net = $network -split "."
+	$mas = $mask -split "."
+
+	Show-Error ""
 }
 
 Function Current() {
@@ -9,7 +15,15 @@ Function Current() {
 }
 
 Function Custom() {
+	[string]$Network = Read-Host "Network (192.168.0.0) "
+	[string]$SubnetMask = Read-Host "Subnet (255.255.255.0) "	
 
+	echo $Network
+	$Network = $Network -split "."
+	Write-Host $Network | gm
+	Write-Host $Network
+
+	SubnetScan $Network $SubnetMask
 }
 
 $opt = @()
