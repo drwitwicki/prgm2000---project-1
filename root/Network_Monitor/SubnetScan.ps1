@@ -3,27 +3,37 @@
 
 $ValidMaskChunks = @(254, 252, 248, 240, 224, 192, 128, 0)
 
+
 Function SubnetScan($network, $mask) {
+
+	ping 1.1.1.1 -c 1
 
 	$net = $network.split(".")
 	$mas = $mask.split(".")
 
+	$StartOfNet = $net
+
 
 	$mas
-	for ($i=0; $i -lt 4; $i++) {
+	for ($i=0; $i -lt 3; $i++) {
 		if( $mas[$i] -ne 255 -and $mas[$i] -match $ValidMaskChunks) {
 			$NumOfHosts = 255-$mas[$i]
 			for ($j=0; $j -lt 255; $j+=$NumOfHosts) {
 				if( $net[$i] -ge $j -and $net[$i] -le $j) {
-					$StartOfNet = $j
+					$StartOfNet[$i] = $j
 					break
 				}
 			}
 			
 
-			for ($k=$StartOfNet; $k -le $StartOfNet+$NumOfHosts; $k++) {
-				### Do this address
+			for ($k=$StartOfNet[$i]; $k -le $StartOfNet[$i]+$NumOfHosts; $k++) {
+				
 				### Do all addresses (254) in the next octet	
+				#if($i -le 2) {
+				#	for[$l
+				#}
+
+
 			}
 
 			break
