@@ -2,35 +2,18 @@
 ### Eric Caverly & Dave Witwicki
 ### October 19th, 2022
 
-# Display the banner when the program is ran
-$banner = "
-Administrative Tasks Menu
-By Eric & David
-"
-Write-Host -fore yellow "################################"
-Write-Host -fore cyan $banner
-
 # Navigate into root; required so that menu.ps1, README.md, and any other files in the repo don't appear in the menu.
-[String]$TopPath = Get-Location
-$global:PATH="$TopPath/root"
+[String]$global:TopPath = Get-Location
+$global:PATH="$global:TopPath/root"
 cd $PATH
 
 $global:running = $True
 
 . "$TopPath/functions.ps1"
 
-Function Check-Option($Opt, $contArray) {
-	if ($Opt -eq "q") {
-		$global:running = $False
-	} 
-	
-	elseif ($Opt -eq "u") {
-		if($global:PATH.substring($global:PATH.length-4) -ne "root"){
-			cd ..
-			[String]$global:path = Get-Location
-		} else {
-			Show-Error("Unable to move up, at root!")
-		}
+Function Check-Option($Opt, $contArray) {	
+	if ($Opt -eq "u") {
+		cd ..
 	}
 	
 	elseif ( ($Opt -match "[0-9]") -and ($Opt -gt 0) -and ($Opt -lt $contArray.length+1)) {
@@ -47,12 +30,11 @@ Function Go-Into($name) {
 	
 	if ($Ext -eq "") {
 		cd $name
-		[String]$global:path = Get-Location
+		[String]$global:PATH = Get-Location
 	}
 	
 	elseif ($Ext -eq ".ps1") {
 		. "$global:PATH/$name"
-		Show-Error ""
 	} 
 	
 	else {
@@ -60,33 +42,22 @@ Function Go-Into($name) {
 	}
 }
 
-Function Show-Error($Message) {
-	Write-Host -fore red "`n    $Message `n"
-	Write-Host "Press any key to continue..."
-	$null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');
-}
-
 
 While ($running) {
 	$contents = ls
 	$contArray = $contents -split " "
 
-	#$Option = Legacy-Build-Menu $contArray
-
-	$opt = [System.Collections.ArrayList]
+	$opt = @()
+	if($global:PATH.substring($global:PATH.length-4) -ne "root") {
+		$opt+=,@("Up", "u")
+	}
 	for ($i=1; $i -le $contArray.length; $i++) {
 		$item= $contArray[$i-1]
-		$opt.add(("$item", "$i"))
-	}
+		$opt+=,@("$item", "$i")
+	}		
+	$ShortPath = $global:PATH.Substring($global:TopPath.length)
 
-	echo $opt
-	$opt.add(("Quit", "q"))
-	$opt.add(("Up", "u"))
-
-	echo $opt
-	
-	$ShortPath = $global:PATH.Substring($TopPath.length)
-
+	$Option = Build-Menu "Select a script" $ShortPath $opt
 
 	Check-Option $Option $contArray
 }

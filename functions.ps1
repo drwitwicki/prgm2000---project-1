@@ -2,26 +2,45 @@
 ### Eric Caverly
 ### Octover 20th, 2022
 
-Function Legacy-Build-Menu([Array[]]$contArray) {
-	Clear-Host
-	
-	Write-Host -fore yellow "################################"
-	
-	$ShortPath = $global:PATH.Substring($TopPath.length)
-	Write-Host -fore cyan "`n $ShortPath `n"
-
-	for ($i=1; $i -le $contArray.length; $i++) {
-		$item= $contArray[$i-1]
-		Write-Host "$i -- $item"
-	}
-       
-	Write-Host "`nu -- Up"
-	Write-Host "q -- Quit"
-	$Option = Read-Host "`nSelect (eg. '1')"
-	
-	return $Option
-}
+$global:pos = 0
 
 Function Build-Menu($title, $subtitle, [Array[]]$options) {
+	$gettingSelection = $True
+	while($gettingSelection) {
+		Clear-Host
+
+		Write-Host -fore yellow "################################"
+		Write-Host -fore cyan "`n $title `n"
+		Write-Host -fore yellow "################################"
+		Write-Host -fore magenta "`n $subtitle `n"
+
+		for ($i=0; $i -lt $options.length; $i++) {
+			if($i -eq $global:pos) {
+				Write-Host -fore green " >  $($options[$i][0])"
+			} else {
+				Write-Host -fore gray "    $($options[$i][0])"
+
+			}
+		}	
 	
+		Write-Host "`n`n(⬆ /⬇ /↪ /q)"
+
+		$key = $Host.UI.RawUI.ReadKey().virtualkeycode
+
+		Switch($key) {
+			13 { $output = $options[$global:pos][1]; $gettingSelection = $False; $global:pos=0}	# Enter
+			38 { if($global:pos -gt 0) { $global:pos -= 1 } }	# Up
+			40 { if($global:pos -lt $options.length-1) { $global:pos += 1} }	# Down 
+			81 { exit }	# Q
+		}
+	}
+	
+	return $output
+
+}
+
+Function Show-Error($Message) {
+	Write-Host -fore red "`n    $Message `n"
+	Write-Host "Press any key to continue..."
+	$null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');
 }
