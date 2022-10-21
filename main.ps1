@@ -37,8 +37,8 @@ Function Go-Into($name) {
 
 
 While ($running) {
-	$contents = Get-ChildItem
-	$contArray = $contents -split " "
+	$contents = Get-ChildItem | Select-Object -ExpandProperty Name
+	$contArray = @($contents)
 
 	$opt = @()
 	if($global:PATH.substring($global:PATH.length-4) -ne "root") {
