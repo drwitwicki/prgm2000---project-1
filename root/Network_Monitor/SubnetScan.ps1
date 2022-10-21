@@ -1,5 +1,6 @@
 ### Subnet scan
 
+
 $ValidMaskChunks = @(254, 252, 248, 240, 224, 192, 128, 0)
 
 Function SubnetScan($network, $mask) {
@@ -8,8 +9,9 @@ Function SubnetScan($network, $mask) {
 	$mas = $mask.split(".")
 
 
+	$mas
 	for ($i=0; $i -lt 4; $i++) {
-		if( $mas[$i} -ne 255 -and $mas[$i] -match $ValidMaskChunks) {
+		if( $mas[$i] -ne 255 -and $mas[$i] -match $ValidMaskChunks) {
 			$NumOfHosts = 255-$mas[$i]
 			for ($j=0; $j -lt 255; $j+=$NumOfHosts) {
 				if( $net[$i] -ge $j -and $net[$i] -le $j) {
@@ -25,10 +27,10 @@ Function SubnetScan($network, $mask) {
 			}
 
 			break
-		} else {
-			Show-Error "Incorrect Mask"
 		}
 	}
+
+	Show-Error ""
 }
 
 Function Current() {
