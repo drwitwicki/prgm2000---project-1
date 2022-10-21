@@ -25,21 +25,13 @@ Function Check-Option($Opt, $contArray) {
 	}
 }
 
-Function Go-Into($name) {
-	[String]$Ext = Get-Item $name | Select-Object -expandproperty Extension
-	
-	if ($Ext -eq "") {
+Function Go-Into($name) {	
+	if ((Get-Item $name) -is [System.IO.DirectoryInfo]) {
 		cd $name
 		[String]$global:PATH = Get-Location
-	}
-	
-	elseif ($Ext -eq ".ps1") {
+	} else {
 		. "$global:PATH/$name"
-	} 
-	
-	else {
-		Show-Error "Illegal file type!"
-	}
+	} 	
 }
 
 
