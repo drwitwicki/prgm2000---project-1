@@ -14,6 +14,7 @@ $global:running = $True
 Function Check-Option($Opt, $contArray) {	
 	if ($Opt -eq "u") {
 		cd ..
+		[String]$global:PATH = Get-Location
 	}
 	
 	elseif ( ($Opt -match "[0-9]") -and ($Opt -gt 0) -and ($Opt -lt $contArray.length+1)) {
