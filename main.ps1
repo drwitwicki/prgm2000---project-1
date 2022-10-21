@@ -37,7 +37,7 @@ Function Go-Into($name) {
 
 
 While ($running) {
-	$contents = ls
+	$contents = Get-ChildItem
 	$contArray = $contents -split " "
 
 	$opt = @()
