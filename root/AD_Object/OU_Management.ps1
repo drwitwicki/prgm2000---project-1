@@ -11,7 +11,7 @@ function CreateOU() {
 }
 
 # Delete Organizational Unit
-function DeleteOU {
+function DeleteOU() {
 }
 
 # Main Menu
