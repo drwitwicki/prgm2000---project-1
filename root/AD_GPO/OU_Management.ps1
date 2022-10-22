@@ -2,3 +2,15 @@
 ### Eric Caverly & Dave Witwicki
 ### October 19th, 2022
 
+$opt = @()
+$opt+=,@("List OUs", 1)
+$opt+=,@("Create OU", 2)
+$opt+=,@("Delete OU", 3)
+
+$sel = Build-Menu "Organizational Unit Management" "Select Function" $opt
+
+switch ($sel) {
+	1 { ListOU }
+	2 { CreateOU }
+    3 { DeleteOU }
+}
