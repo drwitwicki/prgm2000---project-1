@@ -54,7 +54,7 @@ Function Scan($binnet, $binmas, $slashmask) {
 		
 		Write-Host $decaddr
 		if($IsWindows) {
-			ping $decaddr /n 1 /w 2 | Where -filter {$_ -match "Reply"}
+			ping $decaddr /n 1 /w 1 | Where -filter {$_ -match "Reply"}
 		} else {
 			ping $decaddr -c 1 -W 1 | Where -filter {$_ -match "from"}
 		}
@@ -83,7 +83,19 @@ Function Get-Current() {
 	$addr = @($info | Select-Object -expandproperty IPAddress)
 	$mask = @($info | Select-Object -expandproperty PrefixLength)
 
-	for 
+	$opt2 = @()
+	for ($i = 0; $i -lt $addr.length; $i++) {
+		$content = $addr[$i]+"/"+$mask[$i]
+		$opt2 +=,@("$content", $i)
+	}
+
+	$sel2 = Build-Menu "IPv4 Subet Scan" "Select Network" $opt2
+
+	$netbin, $masbin = Get-BinNetworkAndMask $addr[$sel2] $mask[$sel2]
+	Scan $netbin $masbin $mask[$sel2]
+
+	Show-Message "Completed" green
+
 	Show-Message "Completed" blue
 }
 
