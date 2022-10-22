@@ -22,7 +22,7 @@ Function Check-Option($Opt, $contArray) {
 	} 
 
 	else {
-		Show-Error("Illegal Operation")
+		Show-Message "Illegal Operation" red
 	}
 }
 

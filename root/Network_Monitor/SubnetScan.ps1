@@ -1,6 +1,6 @@
 ### Subnet scan
-
-. .\functions.ps1
+### Eric Caverly
+### October 21st, 2022
 
 Function Get-BinNetworkAndMask($argnetwork, $argmask) {
 	$net = $argnetwork.split(".")
@@ -44,14 +44,18 @@ Function Get-StartOfNetwork($binnet, $binmas) {
 
 Function Scan($binnet, $binmas, $slashmask) {
 	$StartOfNetwork = Get-StartOfNetwork $binnet $binmas
-	$NumOfHosts = [Math]::Pow(2, 32-$slashmask)-2
+	$NumOfHosts = [Math]::Pow(2, 32-$slashmask)-1
 	
 	$addr = $StartOfNetwork
 	for ($i=0; $i -lt $NumOfHosts; $i++) {
 		$decaddr = Get-DecNetwork $addr
 		
 		Write-Host $decaddr
-		ping $decaddr /n 1 /w 2 | Where -filter {$_ -match "Reply"}
+		if($IsWindows) {
+			ping $decaddr /n 1 /w 2 | Where -filter {$_ -match "Reply"}
+		} else {
+			ping $decaddr -c 1 -W 2 | Where -filter {$_ -match "Reply"}
+		}
 
 
 		$tmp = [Convert]::ToInt64($addr, 2)
@@ -59,6 +63,12 @@ Function Scan($binnet, $binmas, $slashmask) {
 		$addr = [Convert]::ToString($tmp, 2).PadLeft(32, "0")
 		
 	}
+}
+
+Function Check-Input($netw, $mask) {
+	$proper = $True
+
+	return $proper
 }
 
 
@@ -72,6 +82,8 @@ Function Get-Custom() {
 
 	$netbin, $masbin = Get-BinNetworkAndMask $Network $SubnetMask
 	Scan $netbin $masbin $SubnetMask
+
+	Show-Message "Completed" green
 }
 
 $opt = @()

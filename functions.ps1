@@ -10,8 +10,7 @@ Function Build-Menu($title, $subtitle, [Array[]]$options) {
 		Clear-Host
 
 		Write-Host -fore yellow "################################"
-		Write-Host -fore cyan "`n $title `n"
-		Write-Host -fore yellow "################################"
+		Write-Host -fore cyan "`n $title"
 		Write-Host -fore magenta "`n $subtitle `n"
 
 		for ($i=0; $i -lt $options.length; $i++) {
@@ -23,7 +22,8 @@ Function Build-Menu($title, $subtitle, [Array[]]$options) {
 			}
 		}	
 	
-		Write-Host "`n`n(up / down / enter / q)"
+		Write-Host "`n`n(up / down / enter / q)`n"
+		Write-Host -fore yellow "################################"
 
 		$key = $Host.UI.RawUI.ReadKey().virtualkeycode
 
@@ -39,8 +39,8 @@ Function Build-Menu($title, $subtitle, [Array[]]$options) {
 
 }
 
-Function Show-Error($Message) {
-	Write-Host -fore red "`n    $Message `n"
+Function Show-Message($Message, $Color) {
+	Write-Host -fore $Color "`n    $Message `n"
 	Write-Host "Press any key to continue..."
 	$null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');
 }
