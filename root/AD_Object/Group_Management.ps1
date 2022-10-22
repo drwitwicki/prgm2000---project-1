@@ -11,7 +11,7 @@ function CreateADGroup() {
 }
 
 # Delete Groups
-function DeleteADGroup {
+function DeleteADGroup() {
 }
 
 # Main Menu
