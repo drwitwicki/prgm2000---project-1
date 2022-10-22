@@ -54,7 +54,3 @@ While ($running) {
 
 	Check-Option $Option $contArray
 }
-
-
-
-
