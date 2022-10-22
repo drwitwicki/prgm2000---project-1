@@ -58,10 +58,12 @@ Function Get-BinNetworkAndMask($argnetwork, $argmask) {
 
 Function Get-DecNetwork($argnetwork) {
 	$net = @($argnetwork.substring(0, 8), $argnetwork.substring(8, 8), $argnetwork.substring(16, 8), $argnetwork.substring(24, 8))
-	foreach $octet in $net {
-		$octet = [Convert]::ToInt32($octet, 2)
+	$decnet =@(0,0,0,0)
+	for($i=0; $i -lt 4; $i++) {
+		$decnet[$i] = [Convert]::ToInt32($net[$i], 2)
 	}
-	$addr 
+	$addr = $decnet -join "."
+	return $addr
 }
 
 Function Current() {
