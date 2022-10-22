@@ -94,8 +94,6 @@ Function Get-Current() {
 	$netbin, $masbin = Get-BinNetworkAndMask $addr[$sel2] $mask[$sel2]
 	Scan $netbin $masbin $mask[$sel2]
 
-	Show-Message "Completed" green
-
 	Show-Message "Completed" blue
 }
 
@@ -109,7 +107,7 @@ Function Get-Custom() {
 		$netbin, $masbin = Get-BinNetworkAndMask $Network $SubnetMask
 		Scan $netbin $masbin $SubnetMask
 
-		Show-Message "Completed" green
+		Show-Message "Completed" blue
 	} else {
 		Show-Message "Invalid Input" red
 		Get-Custom
