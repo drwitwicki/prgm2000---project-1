@@ -3,7 +3,8 @@
 ### October 19th, 2022
 
 # List Organizational Units
-function ListOU() {   
+function ListOU() {
+	Get-ADOrganizationalUnit -Properties CanonicalName -Filter * | Sort-Object CanonicalName | Format-Table CanonicalName, DistinguishedName
 }
 
 # Create Organizational Unit
