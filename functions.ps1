@@ -9,7 +9,7 @@ Function Build-Menu($title, $subtitle, [Array[]]$options) {
 	while($gettingSelection) {
 		Clear-Host
 
-		Write-Host -fore yellow "################################"
+		Write-Host -fore yellow "#####################################"
 		Write-Host -fore cyan "`n $title"
 		Write-Host -fore magenta "`n $subtitle `n"
 
@@ -23,7 +23,7 @@ Function Build-Menu($title, $subtitle, [Array[]]$options) {
 		}	
 	
 		Write-Host "`n`n(up / down / enter / q)`n"
-		Write-Host -fore yellow "################################"
+		Write-Host -fore yellow "#####################################"
 
 		$key = $Host.UI.RawUI.ReadKey().virtualkeycode
 

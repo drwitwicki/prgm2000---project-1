@@ -79,7 +79,12 @@ Function Check-Input($netw, $mask) {
 
 
 Function Get-Current() {
-	
+	$info = Get-NetIPAddress -AddressFamily IPV4
+	$addr = @($info | Select-Object -expandproperty IPAddress)
+	$mask = @($info | Select-Object -expandproperty PrefixLength)
+
+	for 
+	Show-Message "Completed" blue
 }
 
 Function Get-Custom() {
