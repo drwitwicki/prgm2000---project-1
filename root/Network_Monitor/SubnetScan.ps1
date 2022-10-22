@@ -2,6 +2,8 @@
 ### Eric Caverly
 ### October 21st, 2022
 
+. .\functions.ps1
+
 Function Get-BinNetworkAndMask($argnetwork, $argmask) {
 	$net = $argnetwork.split(".")
 	
@@ -67,6 +69,10 @@ Function Scan($binnet, $binmas, $slashmask) {
 
 Function Check-Input($netw, $mask) {
 	$proper = $True
+	$net = $netw.split(".")
+	if($net.length -ne 4) { $proper = $False }
+	if(($net -join "") -notmatch "[0-9]") { $proper = $False }
+	if($mask -notmatch "[0-9]") { $proper = $False }
 
 	return $proper
 }
@@ -80,10 +86,17 @@ Function Get-Custom() {
 	[string]$Network = Read-Host "Network (192.168.0.0) "
 	[string]$SubnetMask = Read-Host "Subnet (255.255.255.0) "	
 
-	$netbin, $masbin = Get-BinNetworkAndMask $Network $SubnetMask
-	Scan $netbin $masbin $SubnetMask
+	$proper = Check-Input $Network $SubnetMask
 
-	Show-Message "Completed" green
+	if($proper) {
+		$netbin, $masbin = Get-BinNetworkAndMask $Network $SubnetMask
+		Scan $netbin $masbin $SubnetMask
+
+		Show-Message "Completed" green
+	} else {
+		Show-Message "Invalid Input" red
+		Get-Custom
+	}
 }
 
 $opt = @()
