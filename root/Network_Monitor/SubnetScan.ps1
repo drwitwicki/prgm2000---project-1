@@ -30,20 +30,35 @@ Function Get-DecNetwork($argnetwork) {
 
 Function Get-StartOfNetwork($binnet, $binmas) {
 	$StartOfNetwork = ""
-	for ($i=0; $i -lt 32; $i++) {
+	for ($i=0; $i -lt 31; $i++) {
 		if($binnet[$i] -eq "1" -and $binmas[$i] -eq "1") {
 			$StartOfNetwork+=1
 		} else {
 			$StartOfNetwork+=0
 		}
 	}
+	$StartOfNetwork+="1"
 	return $StartOfNetwork
 }
 
 
-Function Scan($binnet, binmas) {
+Function Scan($binnet, $binmas, $slashmask) {
 	$StartOfNetwork = Get-StartOfNetwork $binnet $binmas
+	$NumOfHosts = [Math]::Pow(2, 32-$slashmask)-2
 	
+	$addr = $StartOfNetwork
+	for ($i=0; $i -lt $NumOfHosts; $i++) {
+		$decaddr = Get-DecNetwork $addr
+		
+		Write-Host $decaddr
+		ping $decaddr /n 1 /w 2 | Where -filter {$_ -match "Reply"}
+
+
+		$tmp = [Convert]::ToInt64($addr, 2)
+		$tmp += 1
+		$addr = [Convert]::ToString($tmp, 2).PadLeft(32, "0")
+		
+	}
 }
 
 
@@ -56,7 +71,7 @@ Function Get-Custom() {
 	[string]$SubnetMask = Read-Host "Subnet (255.255.255.0) "	
 
 	$netbin, $masbin = Get-BinNetworkAndMask $Network $SubnetMask
-	Scan $netbin $masbin
+	Scan $netbin $masbin $SubnetMask
 }
 
 $opt = @()
