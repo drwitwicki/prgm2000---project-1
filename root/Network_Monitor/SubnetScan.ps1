@@ -2,44 +2,6 @@
 
 . .\functions.ps1
 
-<#
-$ValidMaskChunks = @("254", "252", "248", "240", "224", "192", "128", "0")
-
-Function SubnetScan($network, $mask) {
-	$net = $network.split(".")
-	$mas = $mask.split(".")
-
-	$StartOfNet = $net
-
-	for ($i=0; $i -lt 4; $i++) {
-		if($ValidMaskChunks.contains($mas[$i])) {
-			echo "found"
-			$NumOfHosts = 255-[int]$mas[$i]
-			for ($j=0; $j -lt 255; $j+=$NumOfHosts) {
-				$j
-				$NumOfHosts
-				if( $net[$i] -ge $j -and $net[$i] -le $j) {
-					$StartOfNet[$i] = $j
-				}
-			}
-			
-			$max = [int]$StartOfNet[$i]+[int]$NumOfHosts
-
-			for ($k=[int]$StartOfNet[$i]; $k -le $max; $k++) {
-				$addr = $StartOfNet
-				$addr[$i] = $k
-				$addr = $addr -join "."
-				$addr
-				ping $addr /n 1 /w 3 | Where -filter {$_ -match "Reply"}
-			} 
-
-			break
-		}
-	}
-
-	Show-Error ""
-} #>
-
 Function Get-BinNetworkAndMask($argnetwork, $argmask) {
 	$net = $argnetwork.split(".")
 	
@@ -66,19 +28,35 @@ Function Get-DecNetwork($argnetwork) {
 	return $addr
 }
 
-Function Current() {
+Function Get-StartOfNetwork($binnet, $binmas) {
+	$StartOfNetwork = ""
+	for ($i=0; $i -lt 32; $i++) {
+		if($binnet[$i] -eq "1" -and $binmas[$i] -eq "1") {
+			$StartOfNetwork+=1
+		} else {
+			$StartOfNetwork+=0
+		}
+	}
+	return $StartOfNetwork
+}
+
+
+Function Scan($binnet, binmas) {
+	$StartOfNetwork = Get-StartOfNetwork $binnet $binmas
 	
 }
 
-Function Custom() {
+
+Function Get-Current() {
+	
+}
+
+Function Get-Custom() {
 	[string]$Network = Read-Host "Network (192.168.0.0) "
 	[string]$SubnetMask = Read-Host "Subnet (255.255.255.0) "	
 
 	$netbin, $masbin = Get-BinNetworkAndMask $Network $SubnetMask
-	$netdec = Get-DecNetwork $netbin
-	echo $netbin
-	echo $masbin
-	echo $netdec
+	Scan $netbin $masbin
 }
 
 $opt = @()
@@ -89,7 +67,7 @@ $opt+=,@("Exit", 3)
 $sel = Build-Menu "IPv4 Subnet Scan" "Select Function" $opt
 
 switch ($sel) {
-	1 { Current }
-	2 { Custom }
+	1 { Get-Current }
+	2 { Get-Custom }
 }
 
