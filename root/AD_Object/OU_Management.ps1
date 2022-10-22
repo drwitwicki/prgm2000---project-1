@@ -29,3 +29,5 @@ switch ($sel) {
 	2 { CreateOU }
     3 { DeleteOU }
 }
+
+Show-Message "The operation completeled successfully 👍" Green
