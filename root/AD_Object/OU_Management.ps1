@@ -2,7 +2,17 @@
 ### Eric Caverly & Dave Witwicki
 ### October 19th, 2022
 
-# List Organizational Units
+<#
+.SYNOPSIS
+Lists all the Organizational Units within the current machine's Active Directory Domain.
+
+.DESCRIPTION
+The ListOU function iterates thru each OU object from the root of the Domain and creates a custom object entry containing the friendly and canonical names as well as the number of users and computers contained within each OU. These collected objects are then displayed as a table.
+
+.NOTES
+Output is formatted as a table because otherwise the top few rows of the output would get cut off.
+#>
+
 function ListOU() {
 	Get-ADOrganizationalUnit -Properties CanonicalName -Filter * | Sort-Object CanonicalName | ForEach-Object {
 		[pscustomobject]@{
@@ -37,4 +47,4 @@ switch ($sel) {
     3 { DeleteOU }
 }
 
-Show-Message "The operation completed successfully" Green
+Show-Message "Completed" Blue
