@@ -30,4 +30,4 @@ switch ($sel) {
     3 { DeleteOU }
 }
 
-Show-Message "The operation completeled successfully 👍" Green
+Show-Message "The operation completed successfully" Green
