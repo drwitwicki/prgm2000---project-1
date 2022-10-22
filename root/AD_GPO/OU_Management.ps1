@@ -2,6 +2,20 @@
 ### Eric Caverly & Dave Witwicki
 ### October 19th, 2022
 
+# List Organizational Units
+function ListOU() {   
+}
+
+# Create Organizational Unit
+function CreateOU() {
+}
+
+# Delete Organizational Unit
+function DeleteOU {
+}
+
+# Main Menu
+
 $opt = @()
 $opt+=,@("List OUs", 1)
 $opt+=,@("Create OU", 2)
