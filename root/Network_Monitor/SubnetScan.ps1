@@ -54,7 +54,7 @@ Function Scan($binnet, $binmas, $slashmask) {
 		if($IsWindows) {
 			ping $decaddr /n 1 /w 2 | Where -filter {$_ -match "Reply"}
 		} else {
-			ping $decaddr -c 1 -W 2 | Where -filter {$_ -match "Reply"}
+			ping $decaddr -c 1 -W 1 | Where -filter {$_ -match "from"}
 		}
 
 
