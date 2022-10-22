@@ -11,7 +11,7 @@ function ListOU() {
 			UserCount     = @( Get-AdUser -Filter * -SearchBase $_.DistinguishedName -SearchScope OneLevel ).Count
 			ComputerCount = @( Get-AdComputer -Filter * -SearchBase $_.DistinguishedName -SearchScope OneLevel ).Count
 		}
-	}
+	} | Format-Table -AutoSize Name, CanonicalName, UserCount, ComputerCount
 }
 
 # Create Organizational Unit
