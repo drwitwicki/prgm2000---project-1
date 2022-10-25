@@ -2,8 +2,6 @@
 ### Eric Caverly
 ### October 21st, 2022
 
-. .\functions.ps1
-
 Function Get-BinNetworkAndMask($argnetwork, $argmask) {
 	$net = $argnetwork.split(".")
 	

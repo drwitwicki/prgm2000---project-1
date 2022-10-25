@@ -4,13 +4,21 @@
 
 $global:pos = 0
 
+. "$TopPath/bigtext.ps1"
+
 Function Build-Menu($title, $subtitle, [Array[]]$options) {
 	$gettingSelection = $True
 	while($gettingSelection) {
 		Clear-Host
 
 		Write-Host -fore yellow "#####################################"
-		Write-Host -fore cyan "`n $title"
+		#Write-Host -fore cyan "`n $title"
+		$titleText = Convert-Lorge $title
+		Write-Host -fore cyan $titleText[0]
+		Write-Host -fore cyan $titleText[1]
+		Write-Host -fore cyan $titleText[2]
+
+
 		Write-Host -fore magenta "`n $subtitle `n"
 
 		for ($i=0; $i -lt $options.length; $i++) {
