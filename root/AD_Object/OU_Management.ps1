@@ -13,14 +13,15 @@ The ListOU function iterates thru each OU object from the root of the Domain and
 Output is formatted as a table because otherwise the top few rows of the output would get cut off.
 #>
 function ListOU() {
-	Get-ADOrganizationalUnit -Properties CanonicalName -Filter * | Sort-Object CanonicalName | ForEach-Object {
-		[pscustomobject]@{
-			Name          = Split-Path $_.CanonicalName -Leaf
-			CanonicalName = $_.CanonicalName
-			UserCount     = @( Get-AdUser -Filter * -SearchBase $_.DistinguishedName -SearchScope OneLevel ).Count
-			ComputerCount = @( Get-AdComputer -Filter * -SearchBase $_.DistinguishedName -SearchScope OneLevel ).Count
-		}
-	} | Format-Table -AutoSize Name, CanonicalName, UserCount, ComputerCount
+	Invoke-Command -ComputerName $DCName -Credential Delta\Administrator -ScriptBlock { Get-ADOrganizationalUnit -Properties CanonicalName -Filter * | Sort-Object CanonicalName | ForEach-Object {
+			[pscustomobject]@{
+				Name          = Split-Path $_.CanonicalName -Leaf
+				CanonicalName = $_.CanonicalName
+				UserCount     = @( Get-AdUser -Filter * -SearchBase $_.DistinguishedName -SearchScope OneLevel ).Count
+				ComputerCount = @( Get-AdComputer -Filter * -SearchBase $_.DistinguishedName -SearchScope OneLevel ).Count
+			}
+		} | Format-Table -AutoSize Name, CanonicalName, UserCount, ComputerCount
+	}
 }
 
 <#
@@ -43,11 +44,13 @@ function CreateOU() {
 	Write-Host "Input OU Name`n" -ForegroundColor Green
 	$ADOUName = Read-Host -Prompt ">"
 	# Create the specified OU
-	if($ADOUPath) {
-		New-ADOrganizationalUnit -Name $ADOUName -Path "$ADOUPath,$DomainRoot"
+	if ($ADOUPath) {
+		Invoke-Command -ComputerName $DCName -Credential Delta\Administrator -ScriptBlock { New-ADOrganizationalUnit -Name $ADOUName -Path "$ADOUPath,$DomainRoot"
+		}
 	}
 	else {
-		New-ADOrganizationalUnit -Name $ADOUName
+		Invoke-Command -ComputerName $DCName -Credential Delta\Administrator -ScriptBlock { New-ADOrganizationalUnit -Name $ADOUName
+		}
 	}
 }
 
@@ -58,16 +61,16 @@ function DeleteOU() {
 # Main Menu
 
 $opt = @()
-$opt+=,@("List OUs", 1)
-$opt+=,@("Create OU", 2)
-$opt+=,@("Delete OU", 3)
+$opt += , @("List OUs", 1)
+$opt += , @("Create OU", 2)
+$opt += , @("Delete OU", 3)
 
 $sel = Build-Menu "Organizational Unit Management" "Select Function" $opt
 
 switch ($sel) {
 	1 { ListOU }
 	2 { CreateOU }
-    3 { DeleteOU }
+	3 { DeleteOU }
 }
 
 Show-Message "Completed" Blue
