@@ -2,6 +2,11 @@
 ### Eric Caverly & Dave Witwicki
 ### October 19th, 2022
 
+### Global Variables (Computer Names)
+
+$DCName = "D-DC01"
+$HVServer = ""
+
 # Navigate into root; required so that menu.ps1, README.md, and any other files in the repo don't appear in the menu.
 [String]$global:TopPath = Get-Location
 $global:PATH="$global:TopPath/root"

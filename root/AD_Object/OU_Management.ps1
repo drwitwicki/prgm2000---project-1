@@ -28,7 +28,7 @@ function ListOU() {
 Create Active Directory Organizational Units
 
 .DESCRIPTION
-Long description
+Prompts user for OU name and DistinguishedName path, then creates the OU in AD structure as appropriate. Entering Domain name is not necessary as the script appends that information automatically.  
 
 .NOTES
 General notes
@@ -37,13 +37,18 @@ function CreateOU() {
 	# Get current Domain DistinguishedName
 	$DomainRoot = (Get-ADDomain).DistinguishedName
 	# Get OU Path
-	Write-Host "Input OU Path by DistinguishedName (do not specify domain, leave blank for root)`n" -ForegroundColor Green
+	Write-Host "Input OU Path by DistinguishedName (omit domain name, leave blank for root)`n" -ForegroundColor Green
 	$ADOUPath = Read-Host -Prompt ">"
 	# Get OU to be created
 	Write-Host "Input OU Name`n" -ForegroundColor Green
 	$ADOUName = Read-Host -Prompt ">"
 	# Create the specified OU
-	New-ADOrganizationalUnit -Name $ADOUName -Path $ADOUPath+",$DomainRoot"
+	if($ADOUPath) {
+		New-ADOrganizationalUnit -Name $ADOUName -Path "$ADOUPath,$DomainRoot"
+	}
+	else {
+		New-ADOrganizationalUnit -Name $ADOUName
+	}
 }
 
 # Delete Organizational Unit
