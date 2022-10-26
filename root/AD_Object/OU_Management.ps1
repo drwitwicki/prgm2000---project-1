@@ -37,11 +37,13 @@ function CreateOU() {
 	# Get current Domain DistinguishedName
 	$DomainRoot = (Get-ADDomain).DistinguishedName
 	# Get OU Path
-	Write-Host "Input OU Path (leave blank for root)`n" -ForegroundColor Green
+	Write-Host "Input OU Path by DistinguishedName (do not specify domain, leave blank for root)`n" -ForegroundColor Green
 	$ADOUPath = Read-Host -Prompt ">"
 	# Get OU to be created
 	Write-Host "Input OU Name`n" -ForegroundColor Green
 	$ADOUName = Read-Host -Prompt ">"
+	# Create the specified OU
+	New-ADOrganizationalUnit -Name $ADOUName -Path $ADOUPath+",$DomainRoot"
 }
 
 # Delete Organizational Unit
