@@ -52,9 +52,9 @@ Function Scan($binnet, $binmas, $slashmask) {
 		
 		Write-Host $decaddr
 		if($IsWindows) {
-			ping $decaddr /n 1 /w 1 | Where-Object -filter {$_ -match "Reply"}
+			ping $decaddr /n 1 /w 2 | Where-Object -filter {$_ -match "Reply"}
 		} else {
-			ping $decaddr -c 1 -W 1 | Where-Object -filter {$_ -match "from"}
+			ping $decaddr -c 1 -W 2 | Where-Object -filter {$_ -match "from"}
 		}
 
 
