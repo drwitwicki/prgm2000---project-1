@@ -12,7 +12,6 @@ The ListOU function iterates thru each OU object from the root of the Domain and
 .NOTES
 Output is formatted as a table because otherwise the top few rows of the output would get cut off.
 #>
-
 function ListOU() {
 	Get-ADOrganizationalUnit -Properties CanonicalName -Filter * | Sort-Object CanonicalName | ForEach-Object {
 		[pscustomobject]@{
@@ -24,8 +23,25 @@ function ListOU() {
 	} | Format-Table -AutoSize Name, CanonicalName, UserCount, ComputerCount
 }
 
-# Create Organizational Unit
+<#
+.SYNOPSIS
+Create Active Directory Organizational Units
+
+.DESCRIPTION
+Long description
+
+.NOTES
+General notes
+#>
 function CreateOU() {
+	# Get current Domain DistinguishedName
+	$DomainRoot = (Get-ADDomain).DistinguishedName
+	# Get OU Path
+	Write-Host "Input OU Path (leave blank for root)`n" -ForegroundColor Green
+	$ADOUPath = Read-Host -Prompt ">"
+	# Get OU to be created
+	Write-Host "Input OU Name`n" -ForegroundColor Green
+	$ADOUName = Read-Host -Prompt ">"
 }
 
 # Delete Organizational Unit
