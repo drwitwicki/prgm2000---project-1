@@ -66,9 +66,9 @@ while ($running) {
 	$contArray2 = @($contents2)
 
 	$opt = @()
-	#$opt += (Get-ADDomain).DistinguishedName
+	$opt += (Get-ADDomain).Forest
 	for ($i = 0; $i -le $contArray.length; $i++) {
-		$item = $contArray[$i - 1]
+		$item = $contArray[$i]
 		$opt += , @("$item", "$i")
 	}
 
@@ -84,27 +84,7 @@ while ($running) {
 		1 {CreateOU($contArray2[$sel])}
 		2 {DeleteOU}
 	}
-
-	# CreateOU($contArray2[$sel]) 
    
 	Show-Message "Completed" Blue
 
 }
-
-# Main Menu
-<#
-$opt = @()
-$opt += , @("List OUs", 1)
-$opt += , @("Create OU", 2)
-$opt += , @("Delete OU", 3)
-
-$sel = Build-Menu "OU MGMT" "Select Function" $opt
-
-switch ($sel) {
-	1 { ListOU }
-	2 { CreateOU }
-	3 { DeleteOU }
-}
-
-Show-Message "Completed" Blue
-#>
