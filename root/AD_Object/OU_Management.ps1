@@ -39,22 +39,22 @@ function CreateOU($ADOUPath) {
 	Write-Host "Input OU Name`n" -ForegroundColor Green
 	$ADOUName = Read-Host -Prompt ">"
 	# Create the specified OU
-	if ($ADOUPath) {
+	if ($ADOUPath -eq "delta.local") {
+		Invoke-Command -ComputerName $DCName -Credential Delta\Administrator -ScriptBlock {
+			param ($ADOUName, $ADOUPath)
+			New-ADOrganizationalUnit -Name $ADOUName
+		} -ArgumentList $ADOUName, $ADOUPath
+	}
+	else {
 		Invoke-Command -ComputerName $DCName -Credential Delta\Administrator -ScriptBlock { 
 			param ($ADOUName, $ADOUPath)
 			New-ADOrganizationalUnit -Name $ADOUName -Path "$ADOUPath"
 		} -ArgumentList $ADOUName, $ADOUPath
 	}
-	else {
-		Invoke-Command -ComputerName $DCName -Credential Delta\Administrator -ScriptBlock { New-ADOrganizationalUnit -Name $ADOUName
-		}
-	}
 }
 
 # Delete Organizational Unit
-function DeleteOU() {
-	# Get current Domain DistinguishedName
-	$DomainRoot = (Get-ADDomain).DistinguishedName
+function DeleteOU($ADOUPath) {
 }
 
 $running = $true
@@ -82,7 +82,7 @@ while ($running) {
 
 	switch ($sel2) {
 		1 {CreateOU($contArray2[$sel])}
-		2 {DeleteOU}
+		2 {DeleteOU($contArray2[$sel])}
 	}
    
 	Show-Message "Completed" Blue
