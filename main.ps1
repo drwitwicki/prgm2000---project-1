@@ -51,11 +51,13 @@ While ($running) {
 	}
 	for ($i=1; $i -le $contArray.length; $i++) {
 		$item= $contArray[$i-1]
-		$opt+=,@("$item", "$i")
+		if ($item[0] -ne ".") {
+			$opt+=,@("$item", "$i")
+		}
 	}		
 	$ShortPath = $global:PATH.Substring($global:TopPath.length)
 
-	$Option = Build-Menu "Select a script" $ShortPath $opt
+	$Option = Build-Menu "Script Sel" $ShortPath $opt
 
 	Check-Option $Option $contArray
 }

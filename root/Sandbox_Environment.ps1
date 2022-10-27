@@ -4,18 +4,15 @@
 
 . "..\.\functions.ps1"
 
+. ".\.sandbox_environment\VMcreation.ps1"
+
 
 $HVserver = "D-SVR01"
-$GIpath = "\\$HVserver\VMstorage\GoldImages\GI\GoldImage\Virtual Machines\6761174C-C3AA-4335-8BFC-1354FAFCC043.vmcx"
-$PATH = "\\$HVserver\VMstorage\"
+
 
 Function Setup-VM($VMname) {
    Invoke-Command -ComputerName $HVserver -ScriptBlock {
-      param ($GIpath, $PATH, $USER, $VMname)
       
-      New-Item -Path "$PATH\$USER" -Name "$VMname" -ItemType "directory"
-      Copy-Item $GIpath "$PATH\$USER\$VMname\$VMname.vmcx"
-
       #Import-VM
    } -ArgumentList $GIpath,$PATH,$USER,$VMname
 }
