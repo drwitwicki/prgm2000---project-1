@@ -84,7 +84,7 @@ $opt += , @("List OUs", 1)
 $opt += , @("Create OU", 2)
 $opt += , @("Delete OU", 3)
 
-$sel = Build-Menu "Organizational Unit Management" "Select Function" $opt
+$sel = Build-Menu "OU MGMT" "Select Function" $opt
 
 switch ($sel) {
 	1 { ListOU }
