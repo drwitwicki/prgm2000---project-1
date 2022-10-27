@@ -40,8 +40,10 @@ function CreateOU($ADOUPath) {
 	$ADOUName = Read-Host -Prompt ">"
 	# Create the specified OU
 	if ($ADOUPath) {
-		Invoke-Command -ComputerName $DCName -Credential Delta\Administrator -ScriptBlock { New-ADOrganizationalUnit -Name $ADOUName -Path "$ADOUPath"
-		}
+		Invoke-Command -ComputerName $DCName -Credential Delta\Administrator -ScriptBlock { 
+			param ($ADOUName, $ADOUPath)
+			New-ADOrganizationalUnit -Name $ADOUName -Path "$ADOUPath"
+		} -ArgumentList $ADOUName, $ADOUPath
 	}
 	else {
 		Invoke-Command -ComputerName $DCName -Credential Delta\Administrator -ScriptBlock { New-ADOrganizationalUnit -Name $ADOUName
