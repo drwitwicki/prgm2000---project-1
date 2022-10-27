@@ -60,20 +60,32 @@ function DeleteOU() {
 $running = $true
 
 while ($running) {
-	$contents = Get-ADOrganizationalUnit -Properties CanonicalName -Filter * | Select-Object -ExpandProperty CanonicalName
+	$contents = Get-ADOrganizationalUnit -Properties CanonicalName -Filter * | Sort-Object CanonicalName | Select-Object -ExpandProperty CanonicalName
 	$contArray = @($contents)
-	$contents2 = Get-ADOrganizationalUnit -Properties DistinguishedName -Filter * | Select-Object -ExpandProperty DistinguishedName
+	$contents2 = Get-ADOrganizationalUnit -Properties DistinguishedName -Filter * | Sort-Object DistinguishedName | Select-Object -ExpandProperty DistinguishedName
 	$contArray2 = @($contents2)
 
 	$opt = @()
+	#$opt += (Get-ADDomain).DistinguishedName
 	for ($i = 0; $i -le $contArray.length; $i++) {
 		$item = $contArray[$i - 1]
 		$opt += , @("$item", "$i")
 	}
 
-	$sel = Build-Menu "Select an OU" "Blah" $opt
+	$sel = Build-Menu "Organizational Units" "select OU to modify" $opt
 
-	CreateOU($contArray2[$sel]) 
+	$opt2 = @()
+	$opt2 += , @("Create OU", 1)
+	$opt2 += , @("Delete OU", 2)
+
+	$sel2 = Build-Menu "OU Management" "select function" $opt2
+
+	switch ($sel2) {
+		1 {CreateOU($contArray2[$sel])}
+		2 {DeleteOU}
+	}
+
+	# CreateOU($contArray2[$sel]) 
    
 	Show-Message "Completed" Blue
 
