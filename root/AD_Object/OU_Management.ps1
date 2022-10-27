@@ -34,18 +34,13 @@ Prompts user for OU name and DistinguishedName path, then creates the OU in AD s
 .NOTES
 General notes
 #>
-function CreateOU() {
-	# Get current Domain DistinguishedName
-	$DomainRoot = (Get-ADDomain).DistinguishedName
-	# Get OU Path
-	Write-Host "Input OU Path by DistinguishedName (omit domain name, leave blank for root)`n" -ForegroundColor Green
-	$ADOUPath = Read-Host -Prompt ">"
+function CreateOU($ADOUPath) {
 	# Get OU to be created
 	Write-Host "Input OU Name`n" -ForegroundColor Green
 	$ADOUName = Read-Host -Prompt ">"
 	# Create the specified OU
 	if ($ADOUPath) {
-		Invoke-Command -ComputerName $DCName -Credential Delta\Administrator -ScriptBlock { New-ADOrganizationalUnit -Name $ADOUName -Path "$ADOUPath,$DomainRoot"
+		Invoke-Command -ComputerName $DCName -Credential Delta\Administrator -ScriptBlock { New-ADOrganizationalUnit -Name $ADOUName -Path "$ADOUPath"
 		}
 	}
 	else {
@@ -56,10 +51,34 @@ function CreateOU() {
 
 # Delete Organizational Unit
 function DeleteOU() {
+	# Get current Domain DistinguishedName
+	$DomainRoot = (Get-ADDomain).DistinguishedName
+}
+
+$running = $true
+
+while ($running) {
+	$contents = Get-ADOrganizationalUnit -Properties CanonicalName -Filter * | Select-Object -ExpandProperty CanonicalName
+	$contArray = @($contents)
+	$contents2 = Get-ADOrganizationalUnit -Properties DistinguishedName -Filter * | Select-Object -ExpandProperty DistinguishedName
+	$contArray2 = @($contents2)
+
+	$opt = @()
+	for ($i = 0; $i -le $contArray.length; $i++) {
+		$item = $contArray[$i - 1]
+		$opt += , @("$item", "$i")
+	}
+
+	$sel = Build-Menu "Select an OU" "Blah" $opt
+
+	CreateOU($contArray2[$sel]) 
+   
+	Show-Message "Completed" Blue
+
 }
 
 # Main Menu
-
+<#
 $opt = @()
 $opt += , @("List OUs", 1)
 $opt += , @("Create OU", 2)
@@ -74,3 +93,4 @@ switch ($sel) {
 }
 
 Show-Message "Completed" Blue
+#>
