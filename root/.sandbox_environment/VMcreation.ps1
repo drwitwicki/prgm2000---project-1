@@ -6,19 +6,22 @@
 
 param ($USER, $VMname)
 
-$PATH = "\\$HVserver\VMstorage"
+$PATH = "E:"
 $VMPATH = "$PATH\$USER\$VMname"
+$VHDXPATH = "$VMPATH\$VMname.vhdx"
+$GIpath = "$PATH\GoldImages\GoldImage\GoldImage.vhdx"
 
-$image = "$PATH\isos\tiny10.iso"
 $vmswitch = "vswitch1"
 $port = "port1"
 $cpu = 2
-$ram = 4GB
-$disksize = 15GB
+$ram = 2GB
+$disksize = 20GB
 
 
-New-Item -Path "$PATH\$USER" -Name "$VMname" -ItemType "directory"
+#New-Item -Path "$PATH\$USER" -Name "$VMname" -ItemType "directory"
 
-New-VM $VMname
+New-VM $VMname -Path "$PATH\$USER"
 Set-VM $VMname -ProcessorCount $cpu -MemoryStartupBytes $ram
-New-VHD -Path $VMPATH
+New-VHD -Path $VHDXPATH -ParentPath $GIpath
+Add-VMHardDiskDrive -VMname $VMname -Path $VHDXPATH
+

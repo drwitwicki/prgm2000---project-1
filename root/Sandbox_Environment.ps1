@@ -4,39 +4,46 @@
 
 . "..\.\functions.ps1"
 
-. ".\.sandbox_environment\VMcreation.ps1"
-
-
 $HVserver = "D-SVR01"
-
-
-Function Setup-VM($VMname) {
-   Invoke-Command -ComputerName $HVserver -ScriptBlock {
-      
-      #Import-VM
-   } -ArgumentList $GIpath,$PATH,$USER,$VMname
-}
-
-
-$opt = @()
-$opt +=,@("Create VMs", 1)
-$opt +=,@("Destroy Selected", 2)
-$opt +=,@("Exit", 3)
-
+$PATH = "\\$HVserver\VMstorage"
 $USER = whoami
 
-
-if ((Test-Path $PATH$USER) -eq $False) {
+if ((Test-Path $PATH\$USER) -eq $False) {
     New-Item -Path "$PATH" -Name "$USER" -ItemType "directory"
 }
 
-$VMs = Invoke-Command -ComputerName D-SVR01 -ScriptBlock { Get-VM | Where -filter {$_.path -eq "E:\VMFiles"} | Select -Property Name, Path, State} | Select -Property Name, Path, State
+Function Setup-VM($VMname, $NumOfVMs) {
+   Write-Host "Got here"
+   $PresentVMs = Get-ChildItem $PATH\$USER
+   $NumOfPresent = $PresentVMs.length
+   if( [int]$numOfVMs+[int]$NumOfPresent -lt 10) {
+      for ($i=1; $i -lt [int]$numOfVMs+1; $i++) {
+         $IVMname = "$VMname$i"
+         Invoke-Command -ComputerName $HVserver -FilePath ".\.sandbox_environment\VMcreation.ps1" -ArgumentList $USER,$IVMname
+      }
+   }
+}
 
-$VMstring = $VMs | Out-String
+Function Destroy-VM()
 
-$sel = Build-Menu "Sandbox ENV" $VMstring $opt
 
-switch ($sel) {
-   1 { $vmname = Read-Host " Name "; Setup-VM $vmname }
+$sandRunning = $TRUE
+While ($sandRunning) {
+   $VMs = Invoke-Command -ComputerName $HVserver -ScriptBlock { param ($USER); Get-VM  | Select -Property Name, Path, State} | Select -Property Name, Path, State
 
+   $VMstring = $VMs | Out-String
+   $VMlist = $VMs | Select -expandproperty Name
+
+   $opt = @()
+   $opt +=,@("Create VMs", 1)
+   $opt +=,@("Destroy VM", 2)
+   $opt +=,@("Destroy ALL", 3)
+   $opt +=,@("Exit", 4)
+
+   $sel = Build-Menu "Sandbox ENV" $VMstring $opt
+
+   switch ($sel) {
+      1 { $vmname = Read-Host " Name "; $numOfVMs = Read-Host " Amount "; Setup-VM $vmname $numOfVMs }
+      4 { $sandRunning = $FALSE}
+   }
 }
