@@ -1,4 +1,4 @@
-### View/Create/Delete Organizational Unit
+### Create/Delete OUs and Groups
 ### Eric Caverly & Dave Witwicki
 ### October 19th, 2022
 
