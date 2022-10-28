@@ -1,4 +1,4 @@
-### Create/Delete OUs and Groups
+### Create/Delete OUs
 ### Eric Caverly & Dave Witwicki
 ### October 19th, 2022
 
@@ -62,7 +62,7 @@ while ($running) {
 		$opt += , @("$item", "$i")
 	}
 
-	$sel = Build-Menu "OUs" "select OU to modify" $opt
+	$sel = Build-Menu "OU" "select OU to modify" $opt
 
 	$opt2 = @()
 	$opt2 += , @("Create OU", 1)
