@@ -24,13 +24,14 @@ function CreateOU($ADOUPath) {
 
 #
 function DeleteOU($ADOUPath) {
-	if ($ADOUPath -eq "delta.local") {
+	if ($ADOUPath -eq (Get-ADDomain).DistinguishedName) {
 		Write-Host "If you want the script that deletes the domain, you'll have to pay for the premium version" -ForegroundColor Red
 	}
 	else {
 		Invoke-Command -ComputerName $DCName -Credential Delta\Administrator -ScriptBlock {
 			param($ADOUPath)
-			Get-ADOrganizationalUnit -Identity $ADOUPath | Set-ADObject -ProtectedFromAccidentalDeletion:$false -PassThru | Remove-ADOrganizationalUnit -Confirm:$false
+			Set-ADObject -Identity $ADOUPath -ProtectedFromAccidentalDeletion:$false -PassThru
+			Remove-ADOrganizationalUnit -Identity $ADOUPath -Confirm:$false
 		} -ArgumentList $ADOUPath
 	}
 }
@@ -38,15 +39,26 @@ function DeleteOU($ADOUPath) {
 $running = $true
 
 while ($running) {
-	$contents = Get-ADOrganizationalUnit -Properties CanonicalName -Filter * | Sort-Object CanonicalName | Select-Object -ExpandProperty CanonicalName
-	$contArray = @($contents)
-	$contents2 = Get-ADOrganizationalUnit -Properties DistinguishedName -Filter * | Sort-Object DistinguishedName | Select-Object -ExpandProperty DistinguishedName
-	$contArray2 = @($contents2)
+	$CanonicalNamesArray = @()
+	$CanonicalNamesArray += (Get-ADDomain).Forest
+	$CanonicalNamesList = Get-ADOrganizationalUnit -Properties CanonicalName -Filter * | Select-Object -ExpandProperty CanonicalName
+
+	foreach($name in $CanonicalNamesList) {
+		$CanonicalNamesArray += $name
+	}
+
+	$DistinguishedNamesArray = @()
+	$DistinguishedNamesArray += (Get-ADDomain).DistinguishedName
+	$DistinguishedNamesList = Get-ADOrganizationalUnit -Properties DistinguishedName -Filter * | Select-Object -ExpandProperty DistinguishedName
+
+	foreach($name in $DistinguishedNamesList) {
+		$DistinguishedNamesArray += $name
+	}
 
 	$opt = @()
-	$opt += (Get-ADDomain).Forest
-	for ($i = 0; $i -le $contArray.length; $i++) {
-		$item = $contArray[$i]
+	# $opt += , @((Get-ADDomain).Forest, -1)
+	for ($i = 0; $i -le $CanonicalNamesArray.length; $i++) {
+		$item = $CanonicalNamesArray[$i]
 		$opt += , @("$item", "$i")
 	}
 
@@ -59,8 +71,8 @@ while ($running) {
 	$sel2 = Build-Menu "OU Management" "select function" $opt2
 
 	switch ($sel2) {
-		1 {CreateOU($contArray2[$sel])}
-		2 {DeleteOU($contArray2[$sel])}
+		1 {CreateOU($DistinguishedNamesArray[$sel])}
+		2 {DeleteOU($DistinguishedNamesArray[$sel])}
 	}
    
 	Show-Message "Completed" Blue
