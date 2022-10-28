@@ -8,7 +8,6 @@ $HVserver = "D-SVR01"
 $PATH = "\\$HVserver\VMstorage"
 $USER = whoami
 
-
 if ((Test-Path $PATH\$USER) -eq $False) {
     New-Item -Path "$PATH" -Name "$USER" -ItemType "directory"
 }
@@ -24,6 +23,8 @@ Function Setup-VM() {
          $IVMname = "$VMname$i"
          Invoke-Command -ComputerName $HVserver -FilePath ".\.sandbox_environment\VMcreation.ps1" -ArgumentList $USER,$IVMname
       }
+   } else {
+   	Show-Message "To many VMs, maximum of 10 VMs per user" red
    }
 }
 
@@ -41,10 +42,7 @@ Function Destroy-VM($ALL, $VMlist) {
 		$VMname = Build-Menu "Sel VM" "Which VM should be deleted?" $opt2
 		Invoke-Command -ComputerName $HVserver -FilePath ".\.sandbox_environment\VMdeletion.ps1" -ArgumentList $USER,$VMname
 	}
-
-
 }
-
 
 $sandRunning = $TRUE
 While ($sandRunning) {
@@ -66,8 +64,6 @@ While ($sandRunning) {
 	
 	$opt +=,@("Exit", 4)
 
-
-
 	$sel = Build-Menu "Sandbox ENV" $VMstring $opt
 
 	switch ($sel) {
@@ -76,4 +72,5 @@ While ($sandRunning) {
 		3 { Destroy-VM $TRUE $VMlist}
 		4 { $sandRunning = $FALSE}
 	}
+
 }

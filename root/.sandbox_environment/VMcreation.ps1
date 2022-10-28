@@ -22,3 +22,5 @@ Set-VM $VMname -ProcessorCount $cpu -MemoryStartupBytes $ram
 New-VHD -Path $VHDXPATH -ParentPath $GIpath
 Add-VMHardDiskDrive -VMname $VMname -Path $VHDXPATH
 
+
+#Start-VM $VMname
