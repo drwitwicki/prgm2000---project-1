@@ -13,7 +13,6 @@ if ((Test-Path $PATH\$USER) -eq $False) {
 }
 
 Function Setup-VM($VMname, $NumOfVMs) {
-   Write-Host "Got here"
    $PresentVMs = Get-ChildItem $PATH\$USER
    $NumOfPresent = $PresentVMs.length
    if( [int]$numOfVMs+[int]$NumOfPresent -lt 10) {
