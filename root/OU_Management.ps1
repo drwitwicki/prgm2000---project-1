@@ -1,4 +1,4 @@
-### Create/Delete OUs and Groups
+### Create/Delete OUs
 ### Eric Caverly & Dave Witwicki
 ### October 19th, 2022
 
@@ -62,13 +62,13 @@ while ($running) {
 		$opt += , @("$item", "$i")
 	}
 
-	$sel = Build-Menu "Organizational Units" "select OU to modify" $opt
+	$sel = Build-Menu "OU" "select OU to modify" $opt
 
 	$opt2 = @()
 	$opt2 += , @("Create OU", 1)
 	$opt2 += , @("Delete OU", 2)
 
-	$sel2 = Build-Menu "OU Management" "select function" $opt2
+	$sel2 = Build-Menu "OU MGMT" "select function" $opt2
 
 	switch ($sel2) {
 		1 {CreateOU($DistinguishedNamesArray[$sel])}
