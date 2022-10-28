@@ -57,7 +57,7 @@ while ($running) {
 
 	$opt = @()
 	# $opt += , @((Get-ADDomain).Forest, -1)
-	for ($i = 0; $i -le $CanonicalNamesArray.length; $i++) {
+	for ($i = 0; $i -lt $CanonicalNamesArray.length; $i++) {
 		$item = $CanonicalNamesArray[$i]
 		$opt += , @("$item", "$i")
 	}
