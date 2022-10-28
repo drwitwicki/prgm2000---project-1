@@ -17,9 +17,6 @@ $cpu = 2
 $ram = 2GB
 $disksize = 20GB
 
-
-#New-Item -Path "$PATH\$USER" -Name "$VMname" -ItemType "directory"
-
 New-VM $VMname -Path "$PATH\$USER"
 Set-VM $VMname -ProcessorCount $cpu -MemoryStartupBytes $ram
 New-VHD -Path $VHDXPATH -ParentPath $GIpath
