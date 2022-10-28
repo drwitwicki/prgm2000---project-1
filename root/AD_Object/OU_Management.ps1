@@ -24,6 +24,15 @@ function CreateOU($ADOUPath) {
 
 #
 function DeleteOU($ADOUPath) {
+	if ($ADOUPath -eq "delta.local") {
+		Write-Host "If you want the script that deletes the domain, you'll have to pay for the premium version" -ForegroundColor Red
+	}
+	else {
+		Invoke-Command -ComputerName $DCName -Credential Delta\Administrator -ScriptBlock {
+			param($ADOUPath)
+			Get-ADOrganizationalUnit -Identity $ADOUPath | Set-ADObject -ProtectedFromAccidentalDeletion:$false -PassThru | Remove-ADOrganizationalUnit -Confirm:$false
+		} -ArgumentList $ADOUPath
+	}
 }
 
 $running = $true
