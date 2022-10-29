@@ -87,7 +87,7 @@ Function Get-Current() {
 		$opt2 +=,@("$content", $i)
 	}
 
-	$sel2 = Build-Menu "IPv4 Subet Scan" "Select Network" $opt2
+	$sel2 = Build-Menu "Subet Scan" "Select Network" $opt2
 
 	$netbin, $masbin = Get-BinNetworkAndMask $addr[$sel2] $mask[$sel2]
 	Scan $netbin $masbin $mask[$sel2]
@@ -97,7 +97,7 @@ Function Get-Current() {
 
 Function Get-Custom() {
 	[string]$Network = Read-Host "Network (192.168.0.0) "
-	[string]$SubnetMask = Read-Host "Subnet (255.255.255.0) "	
+	[string]$SubnetMask = Read-Host "Subnet (24) "	
 
 	$proper = Check-Input $Network $SubnetMask
 
@@ -117,7 +117,7 @@ $opt+=,@("Current Subnet", 1)
 $opt+=,@("Custom Subnet", 2)
 $opt+=,@("Exit", 3)
 
-$sel = Build-Menu "IPv4 Subnet Scan" "Select Function" $opt
+$sel = Build-Menu "Subnet Scan" "Select Function" $opt
 
 switch ($sel) {
 	1 { Get-Current }
