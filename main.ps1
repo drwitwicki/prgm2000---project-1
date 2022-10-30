@@ -53,5 +53,5 @@ While ($running) {												# Repeat to make the menu interactive
 
 	Check-Option $Option $contArray
 
-	Show-Message "WAIT" blue
+	#Show-Message "WAIT" blue
 }
