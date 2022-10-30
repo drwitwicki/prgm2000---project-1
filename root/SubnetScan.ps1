@@ -71,9 +71,9 @@ Function Check-Input($netw, $mask) {
 	$net = $netw.split(".")							# Function of each check described by error message
 	if ($net.length -ne 4) { $proper = $FALSE; $reason += "Number of octets other than 4 detected, "}
 	foreach ($octet in $net) {
-		if($octet -lt 0 -or $octet -gt 255) { $proper = $FALSE; $reason += "Invalid octet number (0-255), "}
+		if ($octet -notmatch "^\d+$") { $proper = $FALSE; $reason += "Octet other than number detected (0-255), "; continue}
+		if([int]$octet -lt 0 -or [int]$octet -gt 255) { $proper = $FALSE; $reason += "Invalid octet number (0-255), "}
 	}
-	if (($net -join "") -notmatch "[0-9]") { $proper = $FALSE; $reason += "IP Input other than number, "}
 	if ($mask -notmatch "^\d+$") {
 		$proper = $FALSE; $reason += "Invalid mask (non-number input detected), "
 	} elseif ([int]$mask -gt 24 -or [int]$mask -lt 0) { 
