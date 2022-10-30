@@ -128,6 +128,23 @@ function UnlockUsers() {
 	}
 }
 
+function ViewLogon() {
+	Write-Host "Input User Name (logon time)`n" -ForegroundColor Green
+	$UserName = Read-Host -Prompt ">"
+
+	Invoke-Command -ComputerName $DCName -Credential Delta\Administrator -ScriptBlock {
+		param($UserName)
+		Get-ADUser -Identity $UserName -Properties * | Select-Object LastLogonDate
+	} -ArgumentList $UserName
+}
+
+function ViewFailedLogon() {
+	Write-Host "Unsuccessful Logins`n`n" -ForegroundColor Green
+	Invoke-Command -ComputerName $DCName -Credential Delta\Administrator -ScriptBlock {
+		Get-ADUser -Filter { badLogonCount -gt 1 } -Properties * | Select-Object ObjectClass, Name, Department, Title, badLogonCount, badPwdCount | Format-Table
+	}
+}
+
 $running = $true
 
 while ($running) {
