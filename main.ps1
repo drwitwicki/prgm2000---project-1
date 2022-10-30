@@ -52,4 +52,6 @@ While ($running) {												# Repeat to make the menu interactive
 	$Option = Build-Menu "Script Sel" $ShortPath $opt
 
 	Check-Option $Option $contArray
+
+	Show-Message "WAIT" blue
 }
