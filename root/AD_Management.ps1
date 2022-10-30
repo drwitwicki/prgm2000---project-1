@@ -41,13 +41,13 @@ function DeleteOU($ADOUPath) {
 function ViewGroups($ADOUPath) {
 	Invoke-Command -ComputerName $DCName -Credential Delta\Administrator -ScriptBlock {
 		param($ADOUPath)
-		Get-ADGroup -Filter * -SearchBase $ADOUPath
+		Get-ADGroup -Filter * -SearchBase $ADOUPath | Select-Object Name, GroupCategory, GroupScope | Format-Table
 	} -ArgumentList $ADOUPath
 }
 
 function CreateGroup($ADOUPath) {
 	Write-Host "Input Group Name (create)`n" -ForegroundColor Green
-	$GroupName = Read-Host -Prompt ">"
+	$GroupName_ = Read-Host -Prompt ">"
 
 	$ScopeOpt = @()
 	$ScopeOpt += , @("Domain Local", 1)
@@ -57,9 +57,9 @@ function CreateGroup($ADOUPath) {
 	$ScopeSel = Build-Menu "AD Groups" "select a scope" $ScopeOpt
 
 	switch ($ScopeSel) {
-		1 {$GroupScope = "DomainLocal"}
-		2 {$GroupScope = "Global"}
-		3 {$GroupScope = "Universal"}
+		1 {$GroupScope_ = 0}
+		2 {$GroupScope_ = 1}
+		3 {$GroupScope_ = 2}
 	}
 
 	$CatOpt = @()
@@ -69,14 +69,18 @@ function CreateGroup($ADOUPath) {
 	$CatSel = Build-Menu "AD Groups" "select a category" $CatOpt
 
 	switch ($CatSel) {
-		1 {$GroupCategory = "Distribution"}
-		2 {$GroupCategory = "Security"}
+		1 {$GroupCategory_ = 0}
+		2 {$GroupCategory_ = 1}
 	}
 
+	Write-Host $ADOUPath
+	Write-Host $GroupScope_
+	Write-Host $GroupCategory_
+
 	Invoke-Command -ComputerName $DCName -Credential Delta\Administrator -ScriptBlock {
-		param($ADOUPath, $GroupName, $GroupScope, $GroupCategory)
-		New-ADGroup -Name $GroupName -GroupCategory $GroupCategory -GroupScope $GroupScope -Path $ADOUPath -Description "created by script"
-	}
+		param($ADOUPath, $GroupName_, $GroupScope_, $GroupCategory_)
+		New-ADGroup -Name $GroupName_ -GroupCategory $GroupCategory_ -GroupScope $GroupScope_ -Path $ADOUPath -Description "created by script"
+	} -ArgumentList $ADOUPath, $GroupName_, $GroupScope_, $GroupCategory_
 }
 
 function DeleteGroup() {
@@ -92,13 +96,11 @@ function DeleteGroup() {
 function CreateUser($ADOUPath) {
 	Write-Host "Input User Name (create)`n" -ForegroundColor Green
 	$UserName = Read-Host -Prompt ">"
-	Write-Host "Input Password`n" -ForegroundColor Green
-	$UserPassword = Read-Host -Prompt ">"
 
 	Invoke-Command -ComputerName $DCName -Credential Delta\Administrator -ScriptBlock {
-		param($ADOUPath, $UserName, $UserPassword)
-		New-ADUser -Name $UserName -AccountPassword $UserPassword -Path $ADOUPath -Enabled $true
-	} -ArgumentList $ADOUPath, $UserName, $UserPassword
+		param($ADOUPath, $UserName)
+		New-ADUser -Name $UserName -Path $ADOUPath -Enabled $true
+	} -ArgumentList $ADOUPath, $UserName
 }
 
 function DeleteUser() {
@@ -178,6 +180,12 @@ while ($running) {
 	$opt2 += , @("View Groups", 3)
 	$opt2 += , @("Create Group", 4)
 	$opt2 += , @("Delete Group", 5)
+	$opt2 += , @("Create User", 6)
+	$opt2 += , @("Delete User", 7)
+	$opt2 += , @("Disable User", 8)
+	$opt2 += , @("Unlock Users", 9)
+	$opt2 += , @("View User Logon Time", 10)
+	$opt2 += , @("View Failed Logins", 11)
 
 	$sel2 = Build-Menu "Active Directory" "select function" $opt2
 
@@ -187,6 +195,12 @@ while ($running) {
 		3 {ViewGroups($DistinguishedNamesArray[$sel])}
 		4 {CreateGroup($DistinguishedNamesArray[$sel])}
 		5 {DeleteGroup}
+		6 {CreateUser($DistinguishedNamesArray[$sel])}
+		7 {DeleteUser}
+		8 {DisableUser}
+		9 {UnlockUsers}
+		10 {ViewLogon}
+		11 {ViewFailedLogon}
 	}
    
 	Show-Message "Completed" Blue
