@@ -204,7 +204,7 @@ Function Convert-Lorge($inputText) {
 	return $global:WIP
 }  
 
-Function Add-Letter($Letter) {
+Function Add-Letter($Letter) {          # Letters must be added together using each line, since each letter is 3 rows tall
 	for ($kl=0; $kl -lt 3; $kl++) {
 		$global:WIP[$kl] += $Letter[$kl]
 	}
