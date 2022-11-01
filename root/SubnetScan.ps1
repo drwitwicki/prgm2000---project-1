@@ -41,39 +41,64 @@ Function Get-StartOfNetwork($binnet, $binmas) {		# Find the first IP address in 
 	return $StartOfNetwork
 }
 
+Function Increment-Address($addr) {
+	$tmp = [Convert]::ToInt64($addr, 2)			# Convert the binary version to one big decimal number
+	$tmp += 1  						# Increase the number by one
+	$addr = [Convert]::ToString($tmp, 2).PadLeft(32, "0") 	# Convert the huge number back to binary
+
+	return $addr
+}
+	
 Function Scan($binnet, $binmas, $slashmask) {					# Actual scan function of the subnet 
 	$StartOfNetwork = Get-StartOfNetwork $binnet $binmas 		# Figure out which address to start from
 	$NumOfHosts = [Math]::Pow(2, 32-$slashmask)-1 				# Figure out how many addresses are in the given subnet
 	
 	$addr = $StartOfNetwork
-	$reachable = ""
-	for ($i=0; $i -lt $NumOfHosts; $i++) {			# For each host in the subnet
-		$decaddr = Get-DecNetwork $addr 			# Get the decimal version of its address
-		
-		$output = Test-Connection "$decaddr" -Count 1 -TimeoutSeconds 1 -BufferSize 1
-		$exists = $output.reply.status -eq "Success"
-		if($exists) {
-			try {
-				$hostname = [System.Net.Dns]::getHostByAddress($decaddr).Hostname 
-			} catch {
-				$hostname = ""
-			}
-			$reachable+="$decaddr -- Success => $hostname`n"
+	[System.Collections.ArrayList]$jobs = @()
+	$reachable = @()
+	for ($i=0; $i -lt $NumOfHosts; $i+=6) {			# For each host in the subnet
+		$decaddrlist = @()
+		for($k=0; $k -lt 6; $k++) {
+			if($i+$k -ge $NumOfHosts ) { break } 
+			$decaddrlist += (Get-DecNetwork $addr) 			# Get the decimal version of its address
+			$addr = Increment-Address $addr			
 		}
-	
-		Clear-Host
-		Write-Host "Reachable IP addresses in subnet:" -Fore Cyan
-		Write-Host "$reachable" -Fore Green
-		Write-Host "`n`n   Current Address: $decaddr"
-		Write-Host "Press 'q' to stop" -Fore Yellow
+		$jobs += Start-Job -ScriptBlock {
+			param (
+				$decaddrlist
+			)
+			$result = ""
+			foreach($addr in $decaddrlist) {
+				if(Test-Connection $addr -Count 2 -TimeoutSeconds 1 -BufferSize 1 -quiet) {
+					try {
+						$hostname = [System.Net.Dns]::getHostByAddress($addr).Hostname
+					} catch {
+						$hostname = ""
+					}
+					$result+="$addr -- Exists ==> $hostname`n"
+				} #else { $result+="$addr doesnt exist`n" } 	
+			}
+			$result
+		} -ArgumentList (,$decaddrlist)		
 
-		$tmp = [Convert]::ToInt64($addr, 2)						# Convert the binary version to one big decimal number
-		$tmp += 1  												# Increase the number by one
-		$addr = [Convert]::ToString($tmp, 2).PadLeft(32, "0") 	# Convert the huge number back to binary
+		Clear-Host
+		Write-Host "Pinging $decaddrlist" -fore yellow
 		
 		if ($Host.UI.RawUI.KeyAvailable -and ($Host.UI.RawUI.ReadKey("IncludeKeyUp,NoEcho").Character -eq "q")) { break }		# if the 'q' key was pressed exit the loop (Written by Richard Giles  -- https://community.idera.com/database-tools/powershell/ask_the_experts/f/learn_powershell_from_don_jones-24/8696/problem-with-ending-a-loop-on-keypress)
 	}
-	Clear-Host
+
+	while ($jobs.length -gt 0) {
+		foreach($job in $jobs) {
+			$state = $job | get-job | select-object -expandproperty state
+			if($state -eq "Completed") {
+				$reachable += Receive-Job $job -keep
+				$jobs.remove($job)
+				break
+			} 
+		}
+	}
+	$reachable = $reachable | sort
+	Clear-Host							# Show final status, without 'current address'
 	Write-Host "Reachable IP addresses in subnet:" -Fore Cyan
 	Write-Host "$reachable" -Fore Green
 
@@ -98,35 +123,38 @@ Function Check-Input($netw, $mask) {
 }
 
 
-Function Get-CurrentSubnet() {										# Find the current IP address of the system
+Function Get-CurrentSubnet() {						# Find the current IP address of the system
 	$info = Get-NetIPAddress -AddressFamily IPV4				# Only supported on windows
 	$addr = @($info | Select-Object -expandproperty IPAddress)			# Get all IP addresses of all nics on the system
 	$mask = @($info | Select-Object -expandproperty PrefixLength)		# Get the subnet mask of all nics on the system
 
 	$opt2 = @()
-	for ($i = 0; $i -lt $addr.length; $i++) {					# Build another menu asking the user to select the network they wish to scan
-		$content = $addr[$i]+"/"+$mask[$i]						# Required since every PC has loopback, and a server might have more than one NIC
+	for ($i = 0; $i -lt $addr.length; $i++) {	# Build another menu asking the user to select the network they wish to scan
+		$content = $addr[$i]+"/"+$mask[$i]	# Required since every PC has loopback, and a server might have more than one NIC
 		$opt2 +=,@("$content", $i)
 	}
 
-	$sel2 = Build-Menu "Subet Scan" "Select Network" $opt2			# Menu for selecting network
+	$sel2 = Build-Menu "Subet Scan" "Select Network" $opt2				# Menu for selecting network
 
 	$netbin, $masbin = Get-BinNetworkAndMask $addr[$sel2] $mask[$sel2]		# Conver the chosen IP and Mask to binary
-	Scan $netbin $masbin $mask[$sel2]										# Scan the chosen network
+	Scan $netbin $masbin $mask[$sel2]						# Scan the chosen network
 }
 
-Function Get-CustomSubnet() {										# Manually entered IP and mask, doesn't have to be the subnet the executing machine is on
-	[string]$Network = Read-Host "Network (192.168.0.0) "		# Obtain information from user
-	[string]$SubnetMask = Read-Host "Subnet (24) "	
+Function Get-CustomSubnet() {			# Manually entered IP and mask, doesn't have to be the subnet the executing machine is on
+	$takingInput = $TRUE
+	while ($takingInput) {
+		[string]$Network = Read-Host "Network (192.168.0.0) "		# Obtain information from user
+		[string]$SubnetMask = Read-Host "Subnet (24) "	
 
-	$reason = Check-Input $Network $SubnetMask			# Verify information provided is valid
+		$reason = Check-Input $Network $SubnetMask			# Verify information provided is valid
 
-	if($reason.length -eq 13) {												# if the information is valid (reason hasn't grown in size)
-		$netbin, $masbin = Get-BinNetworkAndMask $Network $SubnetMask	# Convert the information to binary
-		Scan $netbin $masbin $SubnetMask								# Scan the network
-	} else {													# If the information is not valid, tell the user why
-		Show-Message $reason red
-		Get-Custom
+		if($reason.length -eq 13) {												# if the information is valid (reason hasn't grown in size)
+			$takingInput = $FALSE
+			$netbin, $masbin = Get-BinNetworkAndMask $Network $SubnetMask	# Convert the information to binary
+			Scan $netbin $masbin $SubnetMask				# Scan the network
+		} else {						# If the information is not valid, tell the user why
+			Show-Message $reason red	
+		}
 	}
 }
 
