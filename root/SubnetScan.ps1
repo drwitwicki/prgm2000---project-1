@@ -64,6 +64,8 @@ Function Scan($binnet, $binmas, $slashmask) {					# Actual scan function of the 
 		
 		if ($Host.UI.RawUI.KeyAvailable -and ($Host.UI.RawUI.ReadKey("IncludeKeyUp,NoEcho").Character -eq "q")) { break }		# if the 'q' key was pressed exit the loop (Written by Richard Giles  -- https://community.idera.com/database-tools/powershell/ask_the_experts/f/learn_powershell_from_don_jones-24/8696/problem-with-ending-a-loop-on-keypress)
 	}
+
+	Show-Message "Completed" blue
 }
 
 Function Check-Input($netw, $mask) {
@@ -84,7 +86,7 @@ Function Check-Input($netw, $mask) {
 }
 
 
-Function Get-Current() {										# Find the current IP address of the system
+Function Get-CurrentSubnet() {										# Find the current IP address of the system
 	$info = Get-NetIPAddress -AddressFamily IPV4				# Only supported on windows
 	$addr = @($info | Select-Object -expandproperty IPAddress)			# Get all IP addresses of all nics on the system
 	$mask = @($info | Select-Object -expandproperty PrefixLength)		# Get the subnet mask of all nics on the system
@@ -99,21 +101,17 @@ Function Get-Current() {										# Find the current IP address of the system
 
 	$netbin, $masbin = Get-BinNetworkAndMask $addr[$sel2] $mask[$sel2]		# Conver the chosen IP and Mask to binary
 	Scan $netbin $masbin $mask[$sel2]										# Scan the chosen network
-
-	Show-Message "Completed" blue
 }
 
-Function Get-Custom() {										# Manually entered IP and mask, doesn't have to be the subnet the executing machine is on
+Function Get-CustomSubnet() {										# Manually entered IP and mask, doesn't have to be the subnet the executing machine is on
 	[string]$Network = Read-Host "Network (192.168.0.0) "		# Obtain information from user
 	[string]$SubnetMask = Read-Host "Subnet (24) "	
 
 	$reason = Check-Input $Network $SubnetMask			# Verify information provided is valid
 
-	if($reason.length -eq 13) {												# if the information is valid
+	if($reason.length -eq 13) {												# if the information is valid (reason hasn't grown in size)
 		$netbin, $masbin = Get-BinNetworkAndMask $Network $SubnetMask	# Convert the information to binary
 		Scan $netbin $masbin $SubnetMask								# Scan the network
-
-		Show-Message "Completed" blue
 	} else {													# If the information is not valid, tell the user why
 		Show-Message $reason red
 		Get-Custom
@@ -128,6 +126,6 @@ $opt+=,@("Exit", 3)
 $sel = Build-Menu "Subnet Scan" "Select Function" $opt
 
 switch ($sel) {
-	1 { Get-Current }
-	2 { Get-Custom }
+	1 { Get-CurrentSubnet }
+	2 { Get-CustomSubnet }
 }
