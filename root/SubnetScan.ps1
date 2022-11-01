@@ -46,17 +46,26 @@ Function Scan($binnet, $binmas, $slashmask) {					# Actual scan function of the 
 	$NumOfHosts = [Math]::Pow(2, 32-$slashmask)-1 				# Figure out how many addresses are in the given subnet
 	
 	$addr = $StartOfNetwork
-	Write-Host "Press 'q' to stop the scan" -fore Yellow 									
+	$reachable = ""
 	for ($i=0; $i -lt $NumOfHosts; $i++) {			# For each host in the subnet
 		$decaddr = Get-DecNetwork $addr 			# Get the decimal version of its address
 		
-		Write-Host $decaddr
-		if($IsWindows) {							# Ping the decimal version of the address, different operating systems have different syntax since PING is not a powershell CMDlet
-			ping $decaddr /n 1 /w 2 | Where-Object -filter {$_ -match "Reply"}
-		} else {
-			ping $decaddr -c 1 -W 2 | Where-Object -filter {$_ -match "from"}
+		$output = Test-Connection "$decaddr" -Count 1 -TimeoutSeconds 1 -BufferSize 1
+		$exists = $output.reply.status -eq "Success"
+		if($exists) {
+			try {
+				$hostname = [System.Net.Dns]::getHostByAddress($decaddr).Hostname 
+			} catch {
+				$hostname = ""
+			}
+			$reachable+="$decaddr -- Success => $hostname`n"
 		}
-
+	
+		Clear-Host
+		Write-Host "Reachable IP addresses in subnet:" -Fore Cyan
+		Write-Host "$reachable" -Fore Green
+		Write-Host "`n`n   Current Address: $decaddr"
+		Write-Host "Press 'q' to stop" -Fore Yellow
 
 		$tmp = [Convert]::ToInt64($addr, 2)						# Convert the binary version to one big decimal number
 		$tmp += 1  												# Increase the number by one
@@ -64,6 +73,9 @@ Function Scan($binnet, $binmas, $slashmask) {					# Actual scan function of the 
 		
 		if ($Host.UI.RawUI.KeyAvailable -and ($Host.UI.RawUI.ReadKey("IncludeKeyUp,NoEcho").Character -eq "q")) { break }		# if the 'q' key was pressed exit the loop (Written by Richard Giles  -- https://community.idera.com/database-tools/powershell/ask_the_experts/f/learn_powershell_from_don_jones-24/8696/problem-with-ending-a-loop-on-keypress)
 	}
+	Clear-Host
+	Write-Host "Reachable IP addresses in subnet:" -Fore Cyan
+	Write-Host "$reachable" -Fore Green
 
 	Show-Message "Completed" blue
 }
