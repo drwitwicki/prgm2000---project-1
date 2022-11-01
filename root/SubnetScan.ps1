@@ -46,17 +46,26 @@ Function Scan($binnet, $binmas, $slashmask) {					# Actual scan function of the 
 	$NumOfHosts = [Math]::Pow(2, 32-$slashmask)-1 				# Figure out how many addresses are in the given subnet
 	
 	$addr = $StartOfNetwork
-	Write-Host "Press 'q' to stop the scan" -fore Yellow 									
+	$reachable = ""
 	for ($i=0; $i -lt $NumOfHosts; $i++) {			# For each host in the subnet
 		$decaddr = Get-DecNetwork $addr 			# Get the decimal version of its address
 		
-		Write-Host $decaddr
-		if($IsWindows) {							# Ping the decimal version of the address, different operating systems have different syntax since PING is not a powershell CMDlet
-			ping $decaddr /n 1 /w 2 | Where-Object -filter {$_ -match "Reply"}
-		} else {
-			ping $decaddr -c 1 -W 2 | Where-Object -filter {$_ -match "from"}
+		$output = Test-Connection "$decaddr" -Count 1 -TimeoutSeconds 1 -BufferSize 1
+		$exists = $output.reply.status -eq "Success"
+		if($exists) {
+			try {
+				$hostname = [System.Net.Dns]::getHostByAddress($decaddr).Hostname 
+			} catch {
+				$hostname = ""
+			}
+			$reachable+="$decaddr -- Success => $hostname`n"
 		}
-
+	
+		Clear-Host
+		Write-Host "Reachable IP addresses in subnet:" -Fore Cyan
+		Write-Host "$reachable" -Fore Green
+		Write-Host "`n`n   Current Address: $decaddr"
+		Write-Host "Press 'q' to stop" -Fore Yellow
 
 		$tmp = [Convert]::ToInt64($addr, 2)						# Convert the binary version to one big decimal number
 		$tmp += 1  												# Increase the number by one
@@ -64,6 +73,11 @@ Function Scan($binnet, $binmas, $slashmask) {					# Actual scan function of the 
 		
 		if ($Host.UI.RawUI.KeyAvailable -and ($Host.UI.RawUI.ReadKey("IncludeKeyUp,NoEcho").Character -eq "q")) { break }		# if the 'q' key was pressed exit the loop (Written by Richard Giles  -- https://community.idera.com/database-tools/powershell/ask_the_experts/f/learn_powershell_from_don_jones-24/8696/problem-with-ending-a-loop-on-keypress)
 	}
+	Clear-Host
+	Write-Host "Reachable IP addresses in subnet:" -Fore Cyan
+	Write-Host "$reachable" -Fore Green
+
+	Show-Message "Completed" blue
 }
 
 Function Check-Input($netw, $mask) {
@@ -84,7 +98,7 @@ Function Check-Input($netw, $mask) {
 }
 
 
-Function Get-Current() {										# Find the current IP address of the system
+Function Get-CurrentSubnet() {										# Find the current IP address of the system
 	$info = Get-NetIPAddress -AddressFamily IPV4				# Only supported on windows
 	$addr = @($info | Select-Object -expandproperty IPAddress)			# Get all IP addresses of all nics on the system
 	$mask = @($info | Select-Object -expandproperty PrefixLength)		# Get the subnet mask of all nics on the system
@@ -99,21 +113,17 @@ Function Get-Current() {										# Find the current IP address of the system
 
 	$netbin, $masbin = Get-BinNetworkAndMask $addr[$sel2] $mask[$sel2]		# Conver the chosen IP and Mask to binary
 	Scan $netbin $masbin $mask[$sel2]										# Scan the chosen network
-
-	Show-Message "Completed" blue
 }
 
-Function Get-Custom() {										# Manually entered IP and mask, doesn't have to be the subnet the executing machine is on
+Function Get-CustomSubnet() {										# Manually entered IP and mask, doesn't have to be the subnet the executing machine is on
 	[string]$Network = Read-Host "Network (192.168.0.0) "		# Obtain information from user
 	[string]$SubnetMask = Read-Host "Subnet (24) "	
 
 	$reason = Check-Input $Network $SubnetMask			# Verify information provided is valid
 
-	if($reason.length -eq 13) {												# if the information is valid
+	if($reason.length -eq 13) {												# if the information is valid (reason hasn't grown in size)
 		$netbin, $masbin = Get-BinNetworkAndMask $Network $SubnetMask	# Convert the information to binary
 		Scan $netbin $masbin $SubnetMask								# Scan the network
-
-		Show-Message "Completed" blue
 	} else {													# If the information is not valid, tell the user why
 		Show-Message $reason red
 		Get-Custom
@@ -128,6 +138,6 @@ $opt+=,@("Exit", 3)
 $sel = Build-Menu "Subnet Scan" "Select Function" $opt
 
 switch ($sel) {
-	1 { Get-Current }
-	2 { Get-Custom }
+	1 { Get-CurrentSubnet }
+	2 { Get-CustomSubnet }
 }
