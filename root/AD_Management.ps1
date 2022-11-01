@@ -242,9 +242,9 @@ while ($running) {
 	# create array to contain user-readable OU names
 	$CanonicalNamesArray = @()
 	# first entry should be root name of the domain
-	$CanonicalNamesArray += (Get-ADDomain).Forest
+	$CanonicalNamesArray += (Get-ADDomain -Server $DCName).Forest
 	# get a list of all the user-readable OU names
-	$CanonicalNamesList = Get-ADOrganizationalUnit -Properties CanonicalName -Filter * | Select-Object -ExpandProperty CanonicalName
+	$CanonicalNamesList = Get-ADOrganizationalUnit -Server $DCName -Properties CanonicalName -Filter * | Select-Object -ExpandProperty CanonicalName
 
 	# add the list of names to the proper array
 	foreach($name in $CanonicalNamesList) {
@@ -254,9 +254,9 @@ while ($running) {
 	# create an array to hold the distingushed names we need for our scripts to function properly
 	$DistinguishedNamesArray = @()
 	# first entry should be the domain root
-	$DistinguishedNamesArray += (Get-ADDomain).DistinguishedName
+	$DistinguishedNamesArray += (Get-ADDomain -Server $DCName).DistinguishedName
 	# get a list of all the distinguished path names
-	$DistinguishedNamesList = Get-ADOrganizationalUnit -Properties DistinguishedName -Filter * | Select-Object -ExpandProperty DistinguishedName
+	$DistinguishedNamesList = Get-ADOrganizationalUnit -Server $DCName -Properties DistinguishedName -Filter * | Select-Object -ExpandProperty DistinguishedName
 
 	# add the list of distinguished name paths to the proper array
 	foreach($name in $DistinguishedNamesList) {
@@ -269,6 +269,8 @@ while ($running) {
 		$item = $CanonicalNamesArray[$i]
 		$opt += , @("$item", "$i")
 	}
+
+	# Start-Sleep -Seconds 10
 
 	# call the menu that displays our entire active directory
 	$sel = Build-Menu "Active Directory" "select OU to modify" $opt
