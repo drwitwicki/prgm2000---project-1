@@ -39,6 +39,7 @@ if ($RemoteConnection -eq "True") {
         "10.0.19044" {$OS = "Windows 10 21H2"; break}
         "10.0.22000" {$OS = "Windows 11 21H2"; break}
         "10.0.22621" {$OS = "Windows 11 22H2"; break}
+        "10.0.20348" {$OS = "Windows Server 2022"; break}
         default {$OS = "Unknown Operating System"; break}
     }
 
@@ -55,3 +56,6 @@ if ($RemoteConnection -eq "True") {
 else {
     Write-Host "Computer Unreachable or Nonexistent" -ForegroundColor Red
 }
+
+# show something so the display doesn't immediately clear
+Show-Message "Completed" Blue
