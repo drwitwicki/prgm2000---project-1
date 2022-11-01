@@ -41,12 +41,12 @@ Function Get-StartOfNetwork($binnet, $binmas) {		# Find the first IP address in 
 	return $StartOfNetwork
 }
 
-
 Function Scan($binnet, $binmas, $slashmask) {					# Actual scan function of the subnet 
 	$StartOfNetwork = Get-StartOfNetwork $binnet $binmas 		# Figure out which address to start from
 	$NumOfHosts = [Math]::Pow(2, 32-$slashmask)-1 				# Figure out how many addresses are in the given subnet
 	
-	$addr = $StartOfNetwork 									
+	$addr = $StartOfNetwork
+	Write-Host "Press 'q' to stop the scan" -fore Yellow 									
 	for ($i=0; $i -lt $NumOfHosts; $i++) {			# For each host in the subnet
 		$decaddr = Get-DecNetwork $addr 			# Get the decimal version of its address
 		
@@ -62,25 +62,25 @@ Function Scan($binnet, $binmas, $slashmask) {					# Actual scan function of the 
 		$tmp += 1  												# Increase the number by one
 		$addr = [Convert]::ToString($tmp, 2).PadLeft(32, "0") 	# Convert the huge number back to binary
 		
+		if ($Host.UI.RawUI.KeyAvailable -and ($Host.UI.RawUI.ReadKey("IncludeKeyUp,NoEcho").Character -eq "q")) { break }		# if the 'q' key was pressed exit the loop (Written by Richard Giles  -- https://community.idera.com/database-tools/powershell/ask_the_experts/f/learn_powershell_from_don_jones-24/8696/problem-with-ending-a-loop-on-keypress)
 	}
 }
 
 Function Check-Input($netw, $mask) {
-	$proper = $True									# Innocent until provin guilty
 	$reason = "INPUT ERROR: "
 	$net = $netw.split(".")							# Function of each check described by error message
-	if ($net.length -ne 4) { $proper = $FALSE; $reason += "Number of octets other than 4 detected, "}
+	if ($net.length -ne 4) { $reason += "Number of octets other than 4 detected, "}
 	foreach ($octet in $net) {
-		if ($octet -notmatch "^\d+$") { $proper = $FALSE; $reason += "Octet other than number detected (0-255), "; continue}
-		if([int]$octet -lt 0 -or [int]$octet -gt 255) { $proper = $FALSE; $reason += "Invalid octet number (0-255), "}
+		if ($octet -notmatch "^\d+$") { $reason += "Octet other than number detected (0-255), "; continue}
+		if([int]$octet -lt 0 -or [int]$octet -gt 255) { $reason += "Invalid octet number (0-255), "}
 	}
 	if ($mask -notmatch "^\d+$") {
-		$proper = $FALSE; $reason += "Invalid mask (non-number input detected), "
-	} elseif ([int]$mask -gt 24 -or [int]$mask -lt 0) { 
-		$proper = $FALSE; $reason += "Invalid mask (number must be between 0 and 24), "
+		$reason += "Invalid mask (non-number input detected), "
+	} elseif ([int]$mask -gt 32 -or [int]$mask -lt 0) {
+		$reason += "Invalid mask (number must be between 0 and 32), "
 	}
 
-	return $proper, $reason
+	return $reason
 }
 
 
@@ -107,9 +107,9 @@ Function Get-Custom() {										# Manually entered IP and mask, doesn't have to
 	[string]$Network = Read-Host "Network (192.168.0.0) "		# Obtain information from user
 	[string]$SubnetMask = Read-Host "Subnet (24) "	
 
-	$proper, $reason = Check-Input $Network $SubnetMask			# Verify information provided is valid
+	$reason = Check-Input $Network $SubnetMask			# Verify information provided is valid
 
-	if($proper) {												# if the information is valid
+	if($reason.length -eq 13) {												# if the information is valid
 		$netbin, $masbin = Get-BinNetworkAndMask $Network $SubnetMask	# Convert the information to binary
 		Scan $netbin $masbin $SubnetMask								# Scan the network
 
