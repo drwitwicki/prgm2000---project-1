@@ -1,6 +1,6 @@
 ### Subnet scan
 ### Eric Caverly
-### October 21st, 2022
+### November 1st, 2022
 
 Function Get-BinNetworkAndMask($argnetwork, $argmask) {		# Convert a decimal network address and slash notation mask to binary
 	$net = $argnetwork.split(".")					# Turn the string of octets into an array
@@ -77,7 +77,7 @@ Function Scan($binnet, $binmas, $slashmask) {					# Actual scan function of the 
 						$hostname = ""
 					}
 					$index = [string]$i 												# Add the pingable address to results, include its chunk number (i)
-					$index = $index.PadLeft(3, '0')
+					$index = $index.PadLeft(5, '0')
 					$result+=("$index`:   $addr -- Exists ==> $hostname")
 				} #else { $result+="$addr doesnt exist`n" } 	
 			}
