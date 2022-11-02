@@ -56,51 +56,59 @@ Function Scan($binnet, $binmas, $slashmask) {					# Actual scan function of the 
 	$addr = $StartOfNetwork
 	[System.Collections.ArrayList]$jobs = @()
 	$reachable = @()
-	for ($i=0; $i -lt $NumOfHosts; $i+=6) {			# For each host in the subnet
+	for ($i=0; $i -lt $NumOfHosts; $i+=6) {			# For each host in the subnet, start a 6 address chunk
 		$decaddrlist = @()
-		for($k=0; $k -lt 6; $k++) {
+		for($k=0; $k -lt 6; $k++) {					# Generate the chunk addresses, but don't go above the specified subnet
 			if($i+$k -ge $NumOfHosts ) { break } 
-			$decaddrlist += (Get-DecNetwork $addr) 			# Get the decimal version of its address
+			$decaddrlist += (Get-DecNetwork $addr) 			# Get the decimal version of each address
 			$addr = Increment-Address $addr			
 		}
-		$jobs += Start-Job -ScriptBlock {
+		$jobs += Start-Job -ScriptBlock {					# Start the chunk job, adding it to the array of jobs
 			param (
-				$decaddrlist
+				$decaddrlist,
+				$i
 			)
-			$result = ""
-			foreach($addr in $decaddrlist) {
-				if(Test-Connection $addr -Count 2 -TimeoutSeconds 1 -BufferSize 1 -quiet) {
-					try {
+			$result = @()
+			foreach($addr in $decaddrlist) {				# For each address in the chunk
+				if(Test-Connection $addr -Count 2 -TimeoutSeconds 1 -BufferSize 1 -quiet) {		# Send 2 ICMP echos
+					try {																		# If a reply is received, try to resove it with DNS
 						$hostname = [System.Net.Dns]::getHostByAddress($addr).Hostname
 					} catch {
 						$hostname = ""
 					}
-					$result+="$addr -- Exists ==> $hostname`n"
+					$index = [string]$i 												# Add the pingable address to results, include its chunk number (i)
+					$index = $index.PadLeft(3, '0')
+					$result+=("$index`:   $addr -- Exists ==> $hostname")
 				} #else { $result+="$addr doesnt exist`n" } 	
 			}
-			$result
-		} -ArgumentList (,$decaddrlist)		
+			if($result.length -gt 0) {				# if the chunk was able to ping anything, combine the output into a string seperated by new lines and output it
+				$output = $result -join("`n")
+				$output
+			}
+		} -ArgumentList @($decaddrlist), $i
 
-		Clear-Host
+											# Show which addresses are being pinged
 		Write-Host "Pinging $decaddrlist" -fore yellow
 		
 		if ($Host.UI.RawUI.KeyAvailable -and ($Host.UI.RawUI.ReadKey("IncludeKeyUp,NoEcho").Character -eq "q")) { break }		# if the 'q' key was pressed exit the loop (Written by Richard Giles  -- https://community.idera.com/database-tools/powershell/ask_the_experts/f/learn_powershell_from_don_jones-24/8696/problem-with-ending-a-loop-on-keypress)
 	}
 
-	while ($jobs.length -gt 0) {
+	while ($jobs.length -gt 0) {		# Once all jobs have been created, iterate through them
 		foreach($job in $jobs) {
-			$state = $job | get-job | select-object -expandproperty state
-			if($state -eq "Completed") {
-				$reachable += Receive-Job $job -keep
+			$state = $job | get-job | select-object -expandproperty state 	
+			if($state -eq "Completed") {			# if the currently selected job is completed
+				$output = Receive-Job $job -keep	# Receive it's output and append it to the reachable array, then remove it from the jobs array
+				$reachable += $output
 				$jobs.remove($job)
-				break
+				break						# Loop must be broken cause the jobs array has been modified
 			} 
 		}
 	}
-	$reachable = $reachable | sort
-	Clear-Host							# Show final status, without 'current address'
+	$reachable = $reachable | sort 				# Sort the array so the addresses are in order
+	[string]$disp = $reachable -join("`n") 		# Join the chunk's output together
+	Clear-Host									# Show final status, without 'current address'
 	Write-Host "Reachable IP addresses in subnet:" -Fore Cyan
-	Write-Host "$reachable" -Fore Green
+	Write-Host "$disp" -Fore Green
 
 	Show-Message "Completed" blue
 }
