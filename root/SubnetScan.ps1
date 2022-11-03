@@ -142,7 +142,7 @@ Function Get-CurrentSubnet() {						# Find the current IP address of the system
 		$opt2 +=,@("$content", $i)
 	}
 
-	$sel2 = Build-Menu "Subet Scan" "Select Network" $opt2				# Menu for selecting network
+	$sel2 = Build-Menu "Subnet Scan" "Select Network" $opt2				# Menu for selecting network
 
 	$netbin, $masbin = Get-BinNetworkAndMask $addr[$sel2] $mask[$sel2]		# Conver the chosen IP and Mask to binary
 	Scan $netbin $masbin $mask[$sel2]						# Scan the chosen network
